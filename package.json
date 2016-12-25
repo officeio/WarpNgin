@@ -1,0 +1,17 @@
+{
+  "name": "officeio-staticengine",
+  "version": "0.0.1",
+  "description": "CLI for serving and building static websites",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "hapi": "^16.0.2",
+    "inert": "^4.0.4",
+    "yargs": "6.5.0"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "James Harrison (OfficeIO Ltd)",
+  "license": "ISC"
+}
