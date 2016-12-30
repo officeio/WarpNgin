@@ -1,14 +1,63 @@
 const Path = require('path');
-const Dom = require('cheerio');
+const DomRuntime = require('cheerio');
 const FileSystem = require('fs');
+const StaticEngineProject = require('./StaticEngineProject');
+const Glob = require('globule');
 
 class StaticEngine {
 
-    get sourceDirectory() { return './src'; }
+    constructor() {
+        this.hasInitialized = false;
+        this.project = new StaticEngineProject();
+        this.pageFiles = [];
+        this.includeFiles = [];
+        this.sourceDirectory = './src';
+        this.elementExtension = 'html';
+    }
 
-    get elementExtension() { return "html"; }
+    /**
+     * Will initialize the engine, but will not bother if already initialized.
+     * 
+     * @returns {StaticEngine}
+     * 
+     * @memberOf StaticEngine
+     */
+    initialize() {
+        if (hasInitialized)
+            return;
+
+        this.pageFiles = this.findPageFiles();
+        this.includeFiles =  this.findIncludeFiles();
+
+        this.hasInitialized = true;
+
+        return this;
+    }
+
+    /**
+     * Finds all the pages as part of the project.
+     * These are the root files to be compiled.
+     * 
+     * @returns {StaticEngine}
+     * 
+     * @memberOf StaticEngine
+     */
+    findPageFiles() {
+        var patterns = this.project.options.pages;
+        var files = Glob.find(patterns);
+
+        return files;
+    }
+
+    findIncludeFiles() {
+        var patterns = this.project.options.pages;
+        var files = Glob.find(patterns);
+
+        return files;
+    }
 
     getElementPath(tagName, dirPath) {
+        this.initialize();
 
         dirPath = dirPath || this.sourceDirectory;
 
@@ -18,10 +67,10 @@ class StaticEngine {
         console.log(`getElementPath: filePath=${filePath}`);
 
         return filePath;
-
     }
 
     isTagTemplated(tagName, dirPath) {
+        this.initialize();
 
         const filePath = this.getElementPath(tagName, dirPath);
 
@@ -30,7 +79,6 @@ class StaticEngine {
             return false;
 
         return true;
-      
     }
 
     /**
@@ -38,6 +86,7 @@ class StaticEngine {
      * @param templateElement {Cheerio}
      */
     compileChildren(templateDom, templateElement, dirPath) {
+        this.initialize();
 
         // const compileUnit = Dom.load(input);
         var childElements = templateElement
@@ -75,6 +124,7 @@ class StaticEngine {
      * @param compileElement {Cheerio}
      */
     replaceElement(templateElement, dirPath) {
+        this.initialize();
 
         const innerElements = templateElement
             .children()
@@ -94,6 +144,7 @@ class StaticEngine {
      * @param templateElement {Cheerio}
      */
     compileElement(templateElement, templateDom, dirPath) {
+        this.initialize();
 
         const innerElements = templateElement
             .children()
@@ -118,15 +169,18 @@ class StaticEngine {
      * @param innerElements {Cheerio[]}
      */
     compileFile(filePath, innerElements) {
+        this.initialize();
+
         const dirPath = Path.dirname(filePath);
         const templateHtml = FileSystem.readFileSync(filePath);
-        const templateDom = Dom.load(templateHtml);
+        const templateDom = DomRuntime.load(templateHtml);
         const templateElement = templateDom.root();
         const instanceElement = compileElement(templateElement, templateDom, dirPath);
         return instanceElement;
     }
 
     transpileFile(filePath) {
+        this.initialize();
 
         // const dirPath = Path.dirname(filePath);
         // const templateHtml = FileSystem.readFileSync(filePath);

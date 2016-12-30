@@ -1,0 +1,9 @@
+{
+    "pages": [
+        "./src/**/*.html", 
+        "!./src/**/_*.html"
+    ],
+    "includes": [
+        "./src/**/_*.html"
+    ]
+}

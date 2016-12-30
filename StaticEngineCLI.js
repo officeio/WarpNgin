@@ -1,4 +1,3 @@
-'use strict';
 
 const Yargs = require('yargs');
 const Hapi = require('hapi');
@@ -6,25 +5,48 @@ const Path = require('path');
 const Inert = require('inert');
 const FileSystem = require('fs');
 const StaticEngine = require('./StaticEngine');
+const StaticEngineView = require('./StaticEngineView');
+const StaticEngineScope = require('./StaticEngineScope');
+const Glob = require('globule');
+const Util = require('underscore');
 
 class StaticEngineCLI {
+
+    constructor() {
+        this.argv = Util.clone(Yargs.argv);
+        this.engine = new StaticEngine();
+    }
+
+    /**
+     * Create the CLI class and run with the arguments.
+     */
+    static run() {
+
+        // Create the CLI class and run with the arguments.
+        var engine = new StaticEngineCLI();
+        engine.execute();
+
+    }
 
     /**
      * Interprets the arguments given by YARGS.
      */
-    run() {
+    execute() {
 
         // Get the command to execute.
-        const command = Yargs.argv._.shift();
+        const command = this.argv._.shift();
         if (!command)
             return this.usage('No command given');
 
+        // Any remaining non-switches are files.
+        const files = this.argv._;
+       
         // Which command are we to process?
         switch (command) {
             case "serve":
                 return this.serve();
             case "build":
-                return this.build();
+                return this.build(files);
             default:
                 return this.usage(`Unknown command [${command}]`);
         }
@@ -103,9 +125,32 @@ class StaticEngineCLI {
     /**
      * Builds the HTML files, places them into the output folder.
      * The static files are also copied to the output folder.
+     * 
+     * @param {String[]} files
      */
-    build() {
-        return this.usage('Command [build], not yet implemented');
+    build(files) {
+        
+        // Collect the parameters for this command.
+        const params = {
+            projectFile: this.argv.project || null
+        };
+
+        // Load the project file.
+        if (params.projectFile)
+            this.engine.project.load(params.projectFile);
+
+        if (!files || files.length < 1)
+            return this.usage('No files argued to build');
+        
+        var view = new StaticEngineView();
+        view.load(files[0]);
+        const output = view.execute(this.argv);
+        // const html = 
+        // const html = output.html();
+        // console.log(html);
+       
+        
+        // return this.usage('Command [build], not yet implemented');
     }
 
     /**

@@ -4,14 +4,25 @@
   "description": "CLI for serving and building static websites",
   "dependencies": {
     "cheerio": "^0.22.0",
+    "globule": "^1.1.0",
     "hapi": "^16.0.2",
     "inert": "^4.0.4",
+    "parse5": "^3.0.1",
+    "underscore": "^1.8.3",
     "yargs": "6.5.0"
+  },
+  "preferGlobal": true,
+  "bin": {
+    "staticengine": "./index.js",
+    "stngin": "./index.js"
   },
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine-node spec"
   },
   "author": "James Harrison (OfficeIO Ltd)",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "jasmine-node": "^1.14.5"
+  }
 }
