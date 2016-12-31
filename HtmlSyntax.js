@@ -1,3 +1,5 @@
+const HtmlParser = require('parse5');
+
 class HtmlSyntax {
 
     static renderAttributePairs(attributes, variables) {
@@ -125,7 +127,7 @@ class HtmlSyntax {
      */
     static renderTemplatedString(templateText, variables) {
 
-        const result = templateText.replace(/\{\{([a-zA-Z0-9\_\-]*?)\}\}/, (replaced, name) => {
+        const result = templateText.replace(/\@\{([a-zA-Z0-9\_\-]*?)\}/, (replaced, name) => {
 
             if (variables[name] === undefined)
                 return "";
@@ -135,6 +137,26 @@ class HtmlSyntax {
         });
 
         return result;
+
+    }
+
+    /**
+     * @param {String} html
+     */
+    static fromHtml(html) {
+
+        const root = HtmlParser.parseFragment(html);
+        return root;
+
+    }
+
+    /**
+     * @param {Node} node
+     */
+    static toHtml(node) {
+
+        const html = HtmlParser.serialize(node);
+        return html;
 
     }
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const StaticEngineView = require('../@StaticEngine').View
+const ViewTemplate = require('../@StaticEngine').ViewTemplate
 
 beforeEach(function () {
     this.addMatchers({
@@ -10,16 +10,16 @@ beforeEach(function () {
     });
 });
 
-describe('StaticEngineView', () => {
+describe('ViewTemplate', () => {
 
     describe('fromHtml', () => {
 
-        it('returns StaticEngineView', () => {
+        it('returns ViewTemplate', () => {
 
-            const result = StaticEngineView.fromHtml('<h1></h1>');
+            const result = ViewTemplate.fromHtml('<h1></h1>');
 
             expect(result).toBeTruthy();
-            expect(result).toBeInstanceOf(StaticEngineView);
+            expect(result).toBeInstanceOf(ViewTemplate);
             expect(result.templateElement.childNodes[0].tagName).toEqual('h1');
 
         });
@@ -30,7 +30,7 @@ describe('StaticEngineView', () => {
 
         it('without scope or attributes', () => {
 
-            const view = StaticEngineView.fromHtml(`<h1></h1>`);
+            const view = ViewTemplate.fromHtml(`<h1></h1>`);
 
             var result = view.executeToHtml();
 
@@ -40,7 +40,7 @@ describe('StaticEngineView', () => {
 
         it('with placeholder, no attributes', () => {
 
-            const view = StaticEngineView.fromHtml(`<h1>{{test}}</h1>`);
+            const view = ViewTemplate.fromHtml(`<h1>@{test}</h1>`);
 
             var result = view.executeToHtml();
 
@@ -50,7 +50,7 @@ describe('StaticEngineView', () => {
 
         it('with placeholder, given attribute', () => {
 
-            const view = StaticEngineView.fromHtml(`<h1>{{test}}</h1>`);
+            const view = ViewTemplate.fromHtml(`<h1>@{test}</h1>`);
             const attributes = {
                 test: 'test_value'
             };
@@ -63,7 +63,7 @@ describe('StaticEngineView', () => {
 
         it('with internal template, no instance element', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
+            const view = ViewTemplate.fromHtml(`` 
                 + `<s:template tag="test-element"></s:template>`);
 
             var result = view.executeToHtml();
@@ -74,7 +74,7 @@ describe('StaticEngineView', () => {
 
         it('with internal template, with empty instance element', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
+            const view = ViewTemplate.fromHtml(`` 
                 + `<s:template tag="test-element"></s:template>` 
                 + `<test-element></test-element>`);
 
@@ -86,7 +86,7 @@ describe('StaticEngineView', () => {
 
         it('with internal template, with instance element', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
+            const view = ViewTemplate.fromHtml(`` 
                 + `<s:template tag="test-element"><h1></h1></s:template>` 
                 + `<test-element></test-element>`);
 
@@ -98,8 +98,8 @@ describe('StaticEngineView', () => {
 
         it('with internal template, with instance element, with placeholders', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
-                + `<s:template tag="test-element"><h1>{{test}}</h1></s:template>` 
+            const view = ViewTemplate.fromHtml(`` 
+                + `<s:template tag="test-element"><h1>@{test}</h1></s:template>` 
                 + `<test-element test="test_value"></test-element>`);
 
             var result = view.executeToHtml();
@@ -110,8 +110,8 @@ describe('StaticEngineView', () => {
 
         it('with internal template, with instance element, with external attribute, should not display internal placeholder', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
-                + `<s:template tag="test-element"><h1>{{test}}</h1></s:template>` 
+            const view = ViewTemplate.fromHtml(`` 
+                + `<s:template tag="test-element"><h1>@{test}</h1></s:template>` 
                 + `<test-element></test-element>`);
             const attributes = {
                 test: 'test_value'
@@ -125,7 +125,7 @@ describe('StaticEngineView', () => {
 
         it('has inner-template, and instance, with transcluded content', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
+            const view = ViewTemplate.fromHtml(`` 
                 + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
                 + `<test-element test="test_value">Welcome Everyone!</test-element>`);
 
@@ -137,9 +137,9 @@ describe('StaticEngineView', () => {
 
         it('has inner-template, and instance, with transcluded content, with outer placeholders', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
+            const view = ViewTemplate.fromHtml(`` 
                 + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
-                + `<test-element inner="inner_value">{{outer}}</test-element>`);
+                + `<test-element inner="inner_value">@{outer}</test-element>`);
             const attributes = {
                 outer: 'outer_value'
             };
@@ -152,9 +152,9 @@ describe('StaticEngineView', () => {
 
         it('has inner-template, and instance, with transcluded content, with inner placeholders, should not output placeholder', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
+            const view = ViewTemplate.fromHtml(`` 
                 + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
-                + `<test-element inner="inner_value">{{inner}}</test-element>`);
+                + `<test-element inner="inner_value">@{inner}</test-element>`);
             const attributes = {
                 outer: 'outer_value'
             };
@@ -167,9 +167,9 @@ describe('StaticEngineView', () => {
 
         it('has inner-template, and instance, with pass-thru placeholders, should output placeholder', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
-                + `<s:template tag="test-element"><h1>{{inner}}</h1></s:template>` 
-                + `<test-element inner="{{outer}}"></test-element>`);
+            const view = ViewTemplate.fromHtml(`` 
+                + `<s:template tag="test-element"><h1>@{inner}</h1></s:template>` 
+                + `<test-element inner="@{outer}"></test-element>`);
             const attributes = {
                 outer: 'outer_value'
             };

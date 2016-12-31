@@ -7,7 +7,7 @@ const Engine = require('./@StaticEngine');
  * 
  * @class StaticEngineScope
  */
-class StaticEngineScope {
+class Scope {
 
     /**
      * @param {StaticEngineScope} parent
@@ -68,7 +68,7 @@ class StaticEngineScope {
         if (tagName === undefined)
             throw Error(`<${Engine.Constants.TEMPLATE_TAG}> found without a tag name`);
 
-        const elementView = Engine.View.fromTemplateElement(elementNode);
+        const elementView = Engine.ViewTemplate.fromTemplateElement(elementNode);
 
         this.registerView(tagName, elementView);
 
@@ -85,4 +85,4 @@ class StaticEngineScope {
 
 }
 
-module.exports.Scope = StaticEngineScope;
+module.exports.Scope = Scope;
