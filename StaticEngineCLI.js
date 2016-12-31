@@ -4,9 +4,7 @@ const Hapi = require('hapi');
 const Path = require('path');
 const Inert = require('inert');
 const FileSystem = require('fs');
-const StaticEngine = require('./StaticEngine');
-const StaticEngineView = require('./StaticEngineView');
-const StaticEngineScope = require('./StaticEngineScope');
+const Engine = require('./@StaticEngine');
 const Glob = require('globule');
 const Util = require('underscore');
 
@@ -14,7 +12,7 @@ class StaticEngineCLI {
 
     constructor() {
         this.argv = Util.clone(Yargs.argv);
-        this.engine = new StaticEngine();
+        //this.engine = new E();
     }
 
     /**
@@ -142,9 +140,9 @@ class StaticEngineCLI {
         if (!files || files.length < 1)
             return this.usage('No files argued to build');
         
-        var view = new StaticEngineView();
-        view.load(files[0]);
-        const output = view.execute(this.argv);
+        var view = Engine.View.fromFile(files[0]);
+        const html = view.executeToHtml(this.argv);
+        console.log(html);
         // const html = 
         // const html = output.html();
         // console.log(html);

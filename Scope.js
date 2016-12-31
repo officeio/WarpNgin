@@ -12,8 +12,9 @@ class StaticEngineScope {
     /**
      * @param {StaticEngineScope} parent
      * @param {Object.<String, String>} attributes
+     * @param {Node[]} transcludedNodes
      */
-    constructor(parent, attributes) {
+    constructor(parent, attributes, transcludedNodes) {
 
         /** @type {StaticEngineScope} */
         this.parent = parent;
@@ -25,7 +26,10 @@ class StaticEngineScope {
         this.attributes = attributes || {};
 
         /** @type {Object.<String, StaticEngineView>} */
-        this.elements = [];
+        this.views = [];
+
+        /** @type {Node[]} */
+        this.transcludedNodes = transcludedNodes || [];
 
     }
 
@@ -34,7 +38,7 @@ class StaticEngineScope {
         let searchScope = this;
         while (searchScope !== undefined) {
 
-            const view = searchScope.elements[tag];
+            const view = searchScope.views[tag];
             if (view !== undefined)
                 return view;
 
@@ -50,7 +54,7 @@ class StaticEngineScope {
      */
     registerView(tag, view) {
         
-        this.elements[tag] = view;
+        this.views[tag] = view;
 
     }
 
@@ -62,7 +66,7 @@ class StaticEngineScope {
         // Get the tag-name from the 'tag' attribute.
         const tagName = Engine.Syntax.getAttributeValue(elementNode, 'tag');
         if (tagName === undefined)
-            throw Error(`<${TEMPLATE_TAG}> found without a tag name`);
+            throw Error(`<${Engine.Constants.TEMPLATE_TAG}> found without a tag name`);
 
         const elementView = Engine.View.fromTemplateElement(elementNode);
 
@@ -75,7 +79,7 @@ class StaticEngineScope {
      */
     unregisterView(tag) {
 
-        delete this.elements[tag];
+        delete this.views[tag];
 
     }
 

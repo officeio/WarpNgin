@@ -1,6 +1,7 @@
 const FileSystem = require('fs');
 const Path = require('path');
 const Util = require('underscore');
+const Engine = require('./@StaticEngine');
 
 /**
  * Loads/Saves and parses project files.
@@ -9,22 +10,12 @@ const Util = require('underscore');
  */
 class StaticEngineProject {
 
-    // /**
-    //  * The default filename used for the project options file.
-    //  * 
-    //  * @static
-    //  * 
-    //  * @memberOf StaticEngineProject
-    //  */
-    // static _defaultFilename = "staticengineconfig.json";
-
     /**
      * Creates an instance of StaticEngineProject.
      * 
      * @memberOf StaticEngineProject
      */
     constructor() {
-        this._defaultFilename = "staticengineconfig.json";
         this.options = {
             "pages": [
                 "**/*.html", 
@@ -68,7 +59,7 @@ class StaticEngineProject {
      * @memberOf StaticEngineProject
      */
     load(filename) {
-        filename = filename || this._defaultFilename;
+        filename = filename || Engine.Constants.PROJECT_FILENAME;
 
         const json = FileSystem.readFileSync(filename);
         this.parse(json);
@@ -82,7 +73,7 @@ class StaticEngineProject {
      * @memberOf StaticEngineProject
      */
     save(filename) {
-        filename = filename || this._defaultFilename;
+        filename = filename || Engine.Constants.PROJECT_FILENAME;
 
         const json = JSON.stringify(this.options, null, 4);
         FileSystem.writeFileSync(filename, json);
@@ -90,4 +81,4 @@ class StaticEngineProject {
 
 }
 
-module.exports = StaticEngineProject;
+module.exports.Project = StaticEngineProject;

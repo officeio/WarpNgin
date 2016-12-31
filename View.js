@@ -1,11 +1,11 @@
 'use strict';
 
+/** @typedef {{ parent: Scope, children: Scope[], attributes: any, views: StaticEngineView[], findView: (tag) => StaticEngineView }} Scope */ 
+
 const Path = require('path');
 const HtmlParser = require('parse5');
 const FileSystem = require('fs');
 const Engine = require('./@StaticEngine');
-
-const TEMPLATE_TAG = "s:template";
 
 /**
  * Deconstructs and stores information about an HTML file.
@@ -27,31 +27,33 @@ class StaticEngineView {
         /** @type {String} */
         this.directory = undefined;
 
-        /** @type {AST.Default.DocumentFragment} */
-        this.templateNode = undefined;
+        /** @type {Element} */
+        this.templateElement = undefined;
 
     }
 
     /**
-     * @param {StaticEngineScope} parentScope
+     * @param {any} attributes
+     * @param {Scope} parentScope
+     * @param {Node[]} transcludedNodes
      * @returns {Node}
      */
-    execute(attributes, parentScope) {
+    execute(attributes, parentScope, transcludedNodes) {
 
         // Has a template been loaded for us?
-        if (!this.templateNode)
+        if (!this.templateElement)
             throw Error("No template loaded");
 
         // Create the scope for this view.
-        var scope = new Engine.Scope(parentScope, attributes)
+        var scope = new Engine.Scope(parentScope, attributes, transcludedNodes);
 
         const outputFragment = {
-            nodeName: this.templateNode.nodeName,
-            mode: this.templateNode.mode,
+            nodeName: this.templateElement.nodeName,
+            mode: this.templateElement.mode,
             childNodes: []
         };
 
-        this.processChildNodes(this.templateNode.childNodes, outputFragment, scope);
+        this.renderNodes(this.templateElement.childNodes, outputFragment, scope);
 
         // var templateHtml = HtmlParser.serialize(this.templateNode);
         // console.log("TEMPLATE: **" + templateHtml + "**");
@@ -64,6 +66,11 @@ class StaticEngineView {
 
     }
 
+    /**
+     * @param {any} attributes
+     * @param {Scope} parentScope
+     * @returns {String}
+     */
     executeToHtml(attributes, parentScope) {
         const node = this.execute(attributes, parentScope);
         const html = HtmlParser.serialize(node);
@@ -71,80 +78,95 @@ class StaticEngineView {
     }
 
     /**
-     * @param {AST.Node} templateNode
-     * @param {AST.Node} parentNode
+     * @param {Node} templateNode
+     * @param {Element} instanceParentElement
      * @param {Scope} scope
-     * @returns {AST.Node}
+     * @returns {Node}
      */
-    processElementNode(templateNode, parentNode, scope) {
+    processElement(templateNode, instanceParentElement, scope) {
 
         const tagName = templateNode.tagName;
-        const outputElement = Engine.Syntax.createElement(tagName, parentNode, templateNode.namespaceURI);
+        const outputElement = Engine.Syntax.createElement(tagName, instanceParentElement, templateNode.namespaceURI);
 
         // Process the attributes first!
         const attributePairs = Engine.Syntax.renderAttributePairs(templateNode.attrs, scope.attributes);
         Engine.Syntax.appendAttribute(outputElement, attributePairs);
 
         // Process the children next!
-        this.processChildNodes(templateNode.childNodes, outputElement, scope);
+        this.renderNodes(templateNode.childNodes, outputElement, scope);
 
         return outputElement;
 
     }
 
-    processNode(templateNode, outputParentNode, scope) {
-
-        // Ignore the contents of directive elements.
-        if (templateNode.tagName == TEMPLATE_TAG)
-            return;
+    /**
+     * @param {Node} templateNode
+     * @param {Element} instanceParentElement
+     * @param {Scope} scope
+     */
+    processNode(templateNode, instanceParentElement, scope) {
 
         // Output text nodes, with placeholders evaluated and replaced.
         if (templateNode.nodeName == '#text') {
             const value = Engine.Syntax.renderTemplatedString(templateNode.value, scope.attributes);
-            const outputChildNode = Engine.Syntax.createText(value, outputParentNode);
-            outputParentNode.childNodes.push(outputChildNode);
+            const outputChildNode = Engine.Syntax.createText(value, instanceParentElement);
+            instanceParentElement.childNodes.push(outputChildNode);
             return;
         }
 
-        // Output typical elements, once being processed.
+        // Is this an element?
         if (templateNode.tagName) {
+
+            // Ignore the contents of template element.
+            if (templateNode.tagName === Engine.Constants.TEMPLATE_TAG)
+                return;
+
+            // Is this a content tag to be replaced with the content given to the view.
+            if (templateNode.tagName === Engine.Constants.CONTENT_TAG) {
+                this.renderNodes(scope.transcludedNodes, instanceParentElement, scope.parent);
+                return;
+            }
 
             // Is there a view associated with this element?
             const view = scope.findView(templateNode.tagName);
             if (view) {
                 const attributePairs = Engine.Syntax.renderAttributePairs(templateNode.attrs, scope.attributes);
                 const attributes = Engine.Syntax.getAttributeDictionary(attributePairs);
-                const viewInstance = view.execute(attributes, scope);
-                Engine.Syntax.append(outputParentNode, viewInstance.childNodes);
+                const innerNodes = templateNode.childNodes;
+                const viewInstance = view.execute(attributes, scope, innerNodes);
+                Engine.Syntax.append(instanceParentElement, viewInstance.childNodes);
                 return
             }
 
             // Render out recursive processing of this element.
-            const outputElement = this.processElementNode(templateNode, outputParentNode, scope);
-            Engine.Syntax.append(outputParentNode, outputElement);
+            const outputElement = this.processElement(templateNode, instanceParentElement, scope);
+            Engine.Syntax.append(instanceParentElement, outputElement);
 
         }
         
     }
 
     /**
+     * @param {Node[]} templateNodes
+     * @param {Element} instanceParentElement
      * @param {Engine.Scope} scope
      */
-    processChildNodes(templateChildNodes, outputParentNode, scope) {
-
-        // Find any templates before processing the child-nodes.
-        const elementNodes = templateChildNodes
-            .filter(n => n.tagName == TEMPLATE_TAG);
+    renderNodes(templateNodes, instanceParentElement, scope) {
 
         const registeredElementTags = [];
+
+        // Find any templates before processing the child-nodes.
+        const elementNodes = templateNodes
+            .filter(n => n.tagName == Engine.Constants.TEMPLATE_TAG);
         for (const elementNode of elementNodes) {
             const tagName = Engine.Syntax.getAttributeValue(elementNode, 'tag');
             scope.registerTemplateElement(elementNode);
             registeredElementTags.push(tagName);
         }
 
-        for (const templateChildNode of templateChildNodes)
-            this.processNode(templateChildNode, outputParentNode, scope);
+        // Process each one of the nodes.
+        for (const templateChildNode of templateNodes)
+            this.processNode(templateChildNode, instanceParentElement, scope);
 
         // Unregister the element template at this level.
         // Mainly to stop confusion to the user.
@@ -156,12 +178,12 @@ class StaticEngineView {
     /**
      * Already parsed HTML to be used for a new view.
      * 
-     * @param {AST.Element} elementNode
+     * @param {Element} templateElement
      */
-    static fromTemplateElement(elementNode) {
+    static fromTemplateElement(templateElement) {
 
         const view = new Engine.View();
-        view.templateNode = elementNode;
+        view.templateElement = templateElement;
         return view;
 
     }
@@ -174,7 +196,7 @@ class StaticEngineView {
     static fromHtml(templateHtml) {
 
         const view = new Engine.View();
-        view.templateNode = HtmlParser.parseFragment(templateHtml);
+        view.templateElement = HtmlParser.parseFragment(templateHtml);
         return view;
 
     }
@@ -183,19 +205,20 @@ class StaticEngineView {
      * Loads the page from an HTML file.
      * 
      * @param {String} filename
+     * 
      */
     static fromFile(filename) {
 
-        const view = new Engine.View();
-
         // Resolve the filename and absolute path.
         const absolutePath = Path.resolve(filename);
-        view.filename = Path.basename(absolutePath);
-        view.directory = Path.dirname(absolutePath);
 
         // Load the HTML from the file and parse it into a traversable DOMs.
         const templateHtml = FileSystem.readFileSync(absolutePath).toString();
-        view.instanceElement = view.parse(templateHtml);
+        const view = Engine.View.fromHtml(templateHtml);
+        view.filename = Path.basename(absolutePath);
+        view.directory = Path.dirname(absolutePath);
+        
+        return view;
 
     }
 

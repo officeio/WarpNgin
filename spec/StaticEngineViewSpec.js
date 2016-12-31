@@ -20,7 +20,7 @@ describe('StaticEngineView', () => {
 
             expect(result).toBeTruthy();
             expect(result).toBeInstanceOf(StaticEngineView);
-            expect(result.templateNode.childNodes[0].tagName).toEqual('h1');
+            expect(result.templateElement.childNodes[0].tagName).toEqual('h1');
 
         });
 
@@ -123,17 +123,62 @@ describe('StaticEngineView', () => {
 
         });
 
-        // it('has inner-template, and instance, with transcluded content', () => {
+        it('has inner-template, and instance, with transcluded content', () => {
 
-        //     const view = StaticEngineView.fromHtml(`` 
-        //         + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
-        //         + `<test-element test="test_value">Welcome Everyone!</test-element>`);
+            const view = StaticEngineView.fromHtml(`` 
+                + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
+                + `<test-element test="test_value">Welcome Everyone!</test-element>`);
 
-        //     var result = view.executeToHtml();
+            var result = view.executeToHtml();
 
-        //     expect(result).toEqual('<h1>Welcome Everyone!</h1>');
+            expect(result).toEqual('<h1>Welcome Everyone!</h1>');
 
-        // });
+        });
+
+        it('has inner-template, and instance, with transcluded content, with outer placeholders', () => {
+
+            const view = StaticEngineView.fromHtml(`` 
+                + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
+                + `<test-element inner="inner_value">{{outer}}</test-element>`);
+            const attributes = {
+                outer: 'outer_value'
+            };
+
+            var result = view.executeToHtml(attributes);
+
+            expect(result).toEqual('<h1>outer_value</h1>');
+
+        });
+
+        it('has inner-template, and instance, with transcluded content, with inner placeholders, should not output placeholder', () => {
+
+            const view = StaticEngineView.fromHtml(`` 
+                + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
+                + `<test-element inner="inner_value">{{inner}}</test-element>`);
+            const attributes = {
+                outer: 'outer_value'
+            };
+
+            var result = view.executeToHtml(attributes);
+
+            expect(result).toEqual('<h1></h1>');
+
+        });
+
+        it('has inner-template, and instance, with pass-thru placeholders, should output placeholder', () => {
+
+            const view = StaticEngineView.fromHtml(`` 
+                + `<s:template tag="test-element"><h1>{{inner}}</h1></s:template>` 
+                + `<test-element inner="{{outer}}"></test-element>`);
+            const attributes = {
+                outer: 'outer_value'
+            };
+
+            var result = view.executeToHtml(attributes);
+
+            expect(result).toEqual('<h1>outer_value</h1>');
+
+        });
 
     });
 
