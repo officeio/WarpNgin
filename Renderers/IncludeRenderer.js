@@ -13,12 +13,13 @@ class IncludeRenderer {
 
     render() {
 
+        // Get the singular file if specified.
         const filename = Engine.Syntax.getAttributeValue(this.sourceNode, 'file');
 
         // Get the paths to load.
         const filesGlob = 
             Engine.Syntax.getAttributeValue(this.sourceNode, 'files')
-            || Engine.Syntax.getAttributeValue(this.sourceNode, 'file');
+            || filename;
 
         // Find the files that match the glob.
         const files = Glob.find(filesGlob, {
@@ -27,7 +28,7 @@ class IncludeRenderer {
 
         // Did they want a specific file, and it didn't exist?
         if (filename && files.length == 0)
-            throw Error(`Include failed, no file found ${filename}`);
+            throw Error(`Include failed, file "${filename}" not found`);
 
         for (const file of files) {
 

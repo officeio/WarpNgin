@@ -191,6 +191,19 @@ describe('ViewTemplate', () => {
 
         });
 
+        it('has included template from non-existing file, should error', () => {
+
+            const view = ViewTemplate.fromHtml(`` 
+                + `<s:include file="spec/test-include-not-found.html"></s:include>`);
+
+            expect(function () {
+
+                view.executeToHtml();
+
+            }).toThrow();
+
+        });
+
         it('has included template, with placeholder, should be file contents with replacement', () => {
 
             const view = ViewTemplate.fromHtml(`` 
