@@ -85,14 +85,6 @@ class StaticEngineView {
         const attributePairs = Engine.Syntax.renderAttributePairs(templateNode.attrs, scope.attributes);
         Engine.Syntax.appendAttribute(outputElement, attributePairs);
 
-        // Is there a view associated with this element?
-        const view = scope.findView(tagName);
-        if (view) {
-            const attributes = Engine.Syntax.getAttributeDictionary(attributePairs);
-            const fragment = view.execute(attributes, scope);
-            return fragment.childNodes;
-        }
-
         // Process the children next!
         this.processChildNodes(templateNode.childNodes, outputElement, scope);
 
@@ -116,9 +108,21 @@ class StaticEngineView {
 
         // Output typical elements, once being processed.
         if (templateNode.tagName) {
-            const output = this.processElementNode(templateNode, outputParentNode, scope);
-            Engine.Syntax.append(outputParentNode, output);
-            return;
+
+            // Is there a view associated with this element?
+            const view = scope.findView(templateNode.tagName);
+            if (view) {
+                const attributePairs = Engine.Syntax.renderAttributePairs(templateNode.attrs, scope.attributes);
+                const attributes = Engine.Syntax.getAttributeDictionary(attributePairs);
+                const viewInstance = view.execute(attributes, scope);
+                Engine.Syntax.append(outputParentNode, viewInstance.childNodes);
+                return
+            }
+
+            // Render out recursive processing of this element.
+            const outputElement = this.processElementNode(templateNode, outputParentNode, scope);
+            Engine.Syntax.append(outputParentNode, outputElement);
+
         }
         
     }
