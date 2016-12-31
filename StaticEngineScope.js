@@ -34,10 +34,9 @@ class StaticEngineScope {
         let searchScope = this;
         while (searchScope !== undefined) {
 
-            /** @type {StaticEngineView} */
-            const view = searchScope.elements[tagName];
+            const view = searchScope.elements[tag];
             if (view !== undefined)
-                return outputElement.childNodes;
+                return view;
 
             searchScope = searchScope.parent;
 

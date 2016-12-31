@@ -1,11 +1,10 @@
 'use strict';
 
 const Path = require('path');
-// const DomRuntime = require('cheerio');
 const HtmlParser = require('parse5');
-// const HtmlSyntax = require('./@StaticEngine').HtmlSyntax;
 const FileSystem = require('fs');
 const Engine = require('./@StaticEngine');
+
 const TEMPLATE_TAG = "s:template";
 
 /**
@@ -34,7 +33,7 @@ class StaticEngineView {
     }
 
     /**
-     * @param {StaticEngineView} scope
+     * @param {StaticEngineScope} parentScope
      * @returns {Node}
      */
     execute(attributes, parentScope) {
@@ -66,11 +65,9 @@ class StaticEngineView {
     }
 
     executeToHtml(attributes, parentScope) {
-
         const node = this.execute(attributes, parentScope);
         const html = HtmlParser.serialize(node);
         return html;
-
     }
 
     /**
@@ -85,47 +82,45 @@ class StaticEngineView {
         const outputElement = Engine.Syntax.createElement(tagName, parentNode, templateNode.namespaceURI);
 
         // Process the attributes first!
-        for (const templateAttribute of templateNode.attrs) {
+        const attributePairs = Engine.Syntax.renderAttributePairs(templateNode.attrs, scope.attributes);
+        Engine.Syntax.appendAttribute(outputElement, attributePairs);
 
-            // Replace the placeholders inside the attribute value with the scope's variables.
-            const value = Engine.Syntax.renderTemplatedString(templateAttribute.value, scope.attributes);
-
-            // Copy over into new element.
-            const outputAttribute = Engine.Syntax.createAttribute(templateAttribute.name, value);
-            
-            outputElement.attrs.push(outputAttribute);
-            
+        // Is there a view associated with this element?
+        const view = scope.findView(tagName);
+        if (view) {
+            const attributes = Engine.Syntax.getAttributeDictionary(attributePairs);
+            const fragment = view.execute(attributes, scope);
+            return fragment.childNodes;
         }
-
-        // Is this a templated element?
-        let searchScope = scope;
-        while (searchScope !== undefined) {
-
-            /** @type {StaticEngineView} */
-            const view = searchScope.elements[tagName];
-            if (view !== undefined) {
-
-                const attributes = {};
-                for (const instanceAttribute of outputElement.attrs)
-                    attributes[instanceAttribute.name] = instanceAttribute.value;
-
-                const resultFragment = view.execute(attributes, scope);
-                for (const resultNode of resultFragment.childNodes) 
-                    outputElement.childNodes.push(resultNode);
-                
-                return outputElement.childNodes;
-
-            }
-
-            searchScope = searchScope.parent;
-
-        } 
 
         // Process the children next!
         this.processChildNodes(templateNode.childNodes, outputElement, scope);
 
         return outputElement;
 
+    }
+
+    processNode(templateNode, outputParentNode, scope) {
+
+        // Ignore the contents of directive elements.
+        if (templateNode.tagName == TEMPLATE_TAG)
+            return;
+
+        // Output text nodes, with placeholders evaluated and replaced.
+        if (templateNode.nodeName == '#text') {
+            const value = Engine.Syntax.renderTemplatedString(templateNode.value, scope.attributes);
+            const outputChildNode = Engine.Syntax.createText(value, outputParentNode);
+            outputParentNode.childNodes.push(outputChildNode);
+            return;
+        }
+
+        // Output typical elements, once being processed.
+        if (templateNode.tagName) {
+            const output = this.processElementNode(templateNode, outputParentNode, scope);
+            Engine.Syntax.append(outputParentNode, output);
+            return;
+        }
+        
     }
 
     /**
@@ -144,34 +139,8 @@ class StaticEngineView {
             registeredElementTags.push(tagName);
         }
 
-        for (const templateChildNode of templateChildNodes) {
-
-            // Ignore the contents of directive elements.
-            if (templateChildNode.tagName == TEMPLATE_TAG)
-                continue;
-
-            // Output text nodes, with placeholders evaluated and replaced.
-            if (templateChildNode.nodeName == '#text') {
-                const value = Engine.Syntax.renderTemplatedString(templateChildNode.value, scope.attributes);
-                const outputChildNode = Engine.Syntax.createText(value, outputParentNode);
-                outputParentNode.childNodes.push(outputChildNode);
-                continue;
-            }
-
-            // Output typical elements, once being processed.
-            if (templateChildNode.tagName) {
-                const output = this.processElementNode(templateChildNode, outputParentNode, scope);
-                if (output instanceof Array) {
-                    for (const outputNode of output)
-                        outputParentNode.childNodes.push(outputNode);
-                } 
-                else {
-                    outputParentNode.childNodes.push(output);
-                }
-                continue;
-            }
-
-        }
+        for (const templateChildNode of templateChildNodes)
+            this.processNode(templateChildNode, outputParentNode, scope);
 
         // Unregister the element template at this level.
         // Mainly to stop confusion to the user.

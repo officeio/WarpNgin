@@ -123,17 +123,17 @@ describe('StaticEngineView', () => {
 
         });
 
-        it('has inner-template, and instance, with transcluded content', () => {
+        // it('has inner-template, and instance, with transcluded content', () => {
 
-            const view = StaticEngineView.fromHtml(`` 
-                + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
-                + `<test-element test="test_value">Welcome Everyone!</test-element>`);
+        //     const view = StaticEngineView.fromHtml(`` 
+        //         + `<s:template tag="test-element"><h1><s:content></s:content></h1></s:template>` 
+        //         + `<test-element test="test_value">Welcome Everyone!</test-element>`);
 
-            var result = view.executeToHtml();
+        //     var result = view.executeToHtml();
 
-            expect(result).toEqual('<h1>Welcome Everyone!</h1>');
+        //     expect(result).toEqual('<h1>Welcome Everyone!</h1>');
 
-        });
+        // });
 
     });
 
