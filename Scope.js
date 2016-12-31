@@ -14,7 +14,7 @@ class Scope {
      * @param {Object.<String, String>} attributes
      * @param {Node[]} transcludedNodes
      */
-    constructor(parent, attributes, transcludedNodes) {
+    constructor(parent, attributes, transcludedNodes, directory) {
 
         /** @type {StaticEngineScope} */
         this.parent = parent;
@@ -30,6 +30,16 @@ class Scope {
 
         /** @type {Node[]} */
         this.transcludedNodes = transcludedNodes || [];
+
+        /** @type {String} */
+        this.directory = directory;
+
+    }
+
+    static createChild(parentScope, attributes, transcludedNodes, directory) {
+
+        const childScope = new Scope(parentScope, attributes, transcludedNodes, directory || this.directory);
+        return childScope;
 
     }
 

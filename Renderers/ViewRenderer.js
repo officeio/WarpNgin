@@ -3,10 +3,13 @@ const Engine = require('../@StaticEngine');
 class ViewRenderer {
 
     constructor(renderingTemplate, parentScope, variables, sourceNode) {
+
         this.template = renderingTemplate;
         this.sourceNode = sourceNode;
+
         var transcludedNodes = sourceNode ? sourceNode.childNodes : undefined;
-        this.scope = new Engine.Scope(parentScope, variables, transcludedNodes);
+        this.scope = Engine.Scope.createChild(parentScope, variables, transcludedNodes, renderingTemplate.directory);
+
     }
 
     render() {

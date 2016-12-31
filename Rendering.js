@@ -52,7 +52,8 @@ class Rendering {
             }
 
             if (sourceNode.tagName === Engine.Constants.INCLUDE_TAG) {
-                // var renderer = 
+                const renderer = new Engine.Renderers.IncludeRenderer(sourceNode, parentElement, scope, this.template);
+                renderer.render();
                 return;
             }
 

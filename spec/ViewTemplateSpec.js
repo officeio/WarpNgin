@@ -180,6 +180,31 @@ describe('ViewTemplate', () => {
 
         });
 
+        it('has included template, should be file contents', () => {
+
+            const view = ViewTemplate.fromHtml(`` 
+                + `<s:include file="spec/test-include-1.html"></s:include>`);
+
+            var result = view.executeToHtml();
+
+            expect(result).toEqual('<h1>TestInclude</h1>');
+
+        });
+
+        it('has included template, with placeholder, should be file contents with replacement', () => {
+
+            const view = ViewTemplate.fromHtml(`` 
+                + `<s:include file="spec/test-include-2.html"></s:include>`);
+            const attributes = {
+                test: 'test_value'
+            };
+
+            var result = view.executeToHtml(attributes);
+
+            expect(result).toEqual('<h1>test_value</h1>');
+
+        });
+
     });
 
 });
