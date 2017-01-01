@@ -1,7 +1,6 @@
-const Engine = require('./@StaticEngine');
 const FileSystem = require('fs');
 
-class BuildSystem {
+export class BuildSystem {
 
 
     Build(project) {
@@ -13,5 +12,3 @@ class BuildSystem {
     }
 
 }
-
-module.exports.Build = BuildSystem;

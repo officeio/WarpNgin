@@ -1,19 +1,18 @@
+import { Constants } from './Index';
+
 const FileSystem = require('fs');
 const Path = require('path');
 const Util = require('underscore');
-const Engine = require('./@StaticEngine');
 
 /**
  * Loads/Saves and parses project files.
- * 
- * @class StaticEngineProject
  */
-class StaticEngineProject {
+export class Project {
+
+    options: any;
 
     /**
      * Creates an instance of StaticEngineProject.
-     * 
-     * @memberOf StaticEngineProject
      */
     constructor() {
         this.options = {
@@ -59,7 +58,7 @@ class StaticEngineProject {
      * @memberOf StaticEngineProject
      */
     load(filename) {
-        filename = filename || Engine.Constants.PROJECT_FILENAME;
+        filename = filename || Constants.PROJECT_FILENAME;
 
         const json = FileSystem.readFileSync(filename);
         this.parse(json);
@@ -73,12 +72,10 @@ class StaticEngineProject {
      * @memberOf StaticEngineProject
      */
     save(filename) {
-        filename = filename || Engine.Constants.PROJECT_FILENAME;
+        filename = filename || Constants.PROJECT_FILENAME;
 
         const json = JSON.stringify(this.options, null, 4);
         FileSystem.writeFileSync(filename, json);
     }
 
 }
-
-module.exports.Project = StaticEngineProject;

@@ -1,50 +1,26 @@
-'use strict';
-
-/** @typedef {{ parent: Scope, children: Scope[], attributes: any, views: ViewTemplate[], findView: (tag) => ViewTemplate }} Scope */ 
-
-const Path = require('path');
-const FileSystem = require('fs');
-const Engine = require('./@StaticEngine');
+import { ASTElement, ASTNode, Syntax, Scope, ViewRenderer } from './Index';
+import * as Path from 'path';
+import * as FileSystem from 'fs';
 
 /**
  * Deconstructs and stores information about an HTML file.
- * 
- * @class StaticEngineView
  */
-class ViewTemplate {
+export class ViewTemplate {
 
-    /**
-     * Creates an instance of ViewTemplate.
-     * 
-     * @memberOf ViewTemplate
-     */
-    constructor() {
+    filename: string;
 
-        /** @type {String} */
-        this.filename = undefined;
+    directory: string;
 
-        /** @type {String} */
-        this.directory = undefined;
+    templateElement: ASTElement;
 
-        /** @type {Element} */
-        this.templateElement = undefined;
-
-    }
-
-    /**
-     * @param {any} attributes
-     * @param {Scope} parentScope
-     * @param {Node[]} transcludedNodes
-     * @returns {Node}
-     */
-    execute(attributes, parentScope, transcludedNodes) {
+    execute(attributes: any, parentScope?: Scope, transcludedNodes?: ASTNode[]) {
 
         // Has a template been loaded for us?
         if (!this.templateElement)
             throw Error("No template loaded");
 
         // Prepare the renderer.
-        const renderer = new Engine.Renderers.ViewRenderer(this, parentScope, attributes);
+        const renderer = new ViewRenderer(this, parentScope, attributes);
 
         // Render and return.
         const output = renderer.render();
@@ -52,14 +28,9 @@ class ViewTemplate {
 
     }
 
-    /**
-     * @param {any} attributes
-     * @param {Scope} parentScope
-     * @returns {String}
-     */
-    executeToHtml(attributes, parentScope) {
+    executeToHtml(attributes?: any, parentScope?: Scope) {
         const node = this.execute(attributes, parentScope);
-        const html = Engine.Syntax.toHtml(node);
+        const html = Syntax.toHtml(node);
         return html;
     }
 
@@ -68,9 +39,9 @@ class ViewTemplate {
      * 
      * @param {Element} templateElement
      */
-    static fromTemplateElement(templateElement) {
+    static fromTemplateElement(templateElement: ASTElement) {
 
-        const view = new Engine.ViewTemplate();
+        const view = new ViewTemplate();
         view.templateElement = templateElement;
         return view;
 
@@ -81,10 +52,10 @@ class ViewTemplate {
      * 
      * @param {String} templateHtml
      */
-    static fromHtml(templateHtml) {
+    static fromHtml(templateHtml: string) {
 
-        const view = new Engine.ViewTemplate();
-        view.templateElement = Engine.Syntax.fromHtml(templateHtml);
+        const view = new ViewTemplate();
+        view.templateElement = Syntax.fromHtml(templateHtml);
         return view;
 
     }
@@ -102,7 +73,7 @@ class ViewTemplate {
 
         // Load the HTML from the file and parse it into a traversable DOMs.
         const templateHtml = FileSystem.readFileSync(absolutePath).toString();
-        const view = Engine.ViewTemplate.fromHtml(templateHtml);
+        const view = ViewTemplate.fromHtml(templateHtml);
         view.filename = Path.basename(absolutePath);
         view.directory = Path.dirname(absolutePath);
         
@@ -111,5 +82,3 @@ class ViewTemplate {
     }
 
 }
-
-module.exports.ViewTemplate = ViewTemplate;

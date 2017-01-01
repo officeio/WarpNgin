@@ -1,14 +1,12 @@
-'use strict';
+import { ASTElement, ViewTemplate } from '../Index';
 
-const ViewTemplate = require('../@StaticEngine').ViewTemplate
-
-beforeEach(function () {
-    this.addMatchers({
-        toBeInstanceOf: function (expected) {
-            return this.actual instanceof expected;
-        }
-    });
-});
+// beforeEach(function () {
+//     this.addMatchers({
+//         toBeInstanceOf: function (expected) {
+//             return this.actual instanceof expected;
+//         }
+//     });
+// });
 
 describe('ViewTemplate', () => {
 
@@ -19,8 +17,8 @@ describe('ViewTemplate', () => {
             const result = ViewTemplate.fromHtml('<h1></h1>');
 
             expect(result).toBeTruthy();
-            expect(result).toBeInstanceOf(ViewTemplate);
-            expect(result.templateElement.childNodes[0].tagName).toEqual('h1');
+            // expect(result).toBeInstanceOf(ViewTemplate);
+            expect((<ASTElement>result.templateElement.childNodes[0]).tagName).toEqual('h1');
 
         });
 
