@@ -5,9 +5,9 @@ export * from './Scope';
 export * from './Constants';
 export * from './Project';
 export * from './BuildSystem';
-export * from './Renderers/ViewRenderer';
-export * from './Renderers/ContentRenderer';
-export * from './Renderers/IncludeRenderer';
+export * from './renderers/ViewRenderer';
+export * from './renderers/ContentRenderer';
+export * from './renderers/IncludeRenderer';
 
 import { AST } from 'parse5';
 export type ASTNode = AST.Default.Node;
