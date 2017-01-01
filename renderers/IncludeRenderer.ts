@@ -1,10 +1,19 @@
-const Engine = require('../@StaticEngine');
+import { ASTElement, ASTNode, Rendering, Syntax, ViewTemplate, Scope } from '../Index';
+import * as FileSystem from 'fs';
+import * as HtmlParser from 'parse5';
 const Glob = require('globule');
-const FileSystem = require('fs');
 
-class IncludeRenderer {
+export class IncludeRenderer {
 
-    constructor(sourceNode, targetElement, scope, template) {
+    sourceNode: ASTElement;
+
+    targetElement: ASTElement;
+
+    scope: Scope;
+
+    template: ViewTemplate;
+
+    constructor(sourceNode: ASTElement, targetElement: ASTElement, scope: Scope, template: ViewTemplate) {
         this.sourceNode = sourceNode;
         this.targetElement = targetElement;
         this.scope = scope;
@@ -14,11 +23,11 @@ class IncludeRenderer {
     render() {
 
         // Get the singular file if specified.
-        const filename = Engine.Syntax.getAttributeValue(this.sourceNode, 'file');
+        const filename = Syntax.getAttributeValue(this.sourceNode, 'file');
 
         // Get the paths to load.
         const filesGlob = 
-            Engine.Syntax.getAttributeValue(this.sourceNode, 'files')
+            Syntax.getAttributeValue(this.sourceNode, 'files')
             || filename;
 
         // Find the files that match the glob.
@@ -33,15 +42,13 @@ class IncludeRenderer {
         for (const file of files) {
 
             // Load the template.
-            const template = Engine.ViewTemplate.fromFile(file);
+            const template = ViewTemplate.fromFile(file);
 
             // Render directly in-place using the current scope, not a child-scope.
-            Engine.Rendering.renderNodes(template.templateElement.childNodes, this.targetElement, this.scope, template);
+            Rendering.renderNodes(template.templateElement.childNodes, this.targetElement, this.scope, template);
 
         }
 
     }
 
 }
-
-module.exports.Renderer = IncludeRenderer;

@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "module": "commonjs",
+        "alwaysStrict": true,
+        "target": "es5",
+        "outDir": "dist"
+    }
+}

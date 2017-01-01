@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "description": "CLI for serving and building static websites",
   "dependencies": {
-    "cheerio": "^0.22.0",
     "globule": "^1.1.0",
     "hapi": "^16.0.2",
     "inert": "^4.0.4",
@@ -18,11 +17,18 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "jasmine-node spec"
+    "build": "tsc",
+    "test": "jasmine-node dist/spec"
   },
   "author": "James Harrison (OfficeIO Ltd)",
   "license": "ISC",
   "devDependencies": {
+    "@types/hapi": "^13.0.37",
+    "@types/inert": "^4.0.0",
+    "@types/jasmine-node": "^1.14.30",
+    "@types/parse5": "^2.2.34",
+    "@types/underscore": "^1.7.36",
+    "@types/yargs": "^6.5.0",
     "jasmine-node": "^1.14.5"
   }
 }

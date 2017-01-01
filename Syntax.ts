@@ -1,14 +1,16 @@
-const HtmlParser = require('parse5');
+// const HtmlParser:any = require('parse5')
+import { ASTElement, ASTNode, ASTText } from './Index';
+import * as HtmlParser from 'parse5';
 
-class HtmlSyntax {
+export class Syntax {
 
     static renderAttributePairs(attributes, variables) {
 
         var resultPairs = [];
 
         for (const attribute of attributes) {
-            const value = HtmlSyntax.renderTemplatedString(attribute.value, variables);
-            const resultAttribute = HtmlSyntax.createAttribute(attribute.name, value);
+            const value = Syntax.renderTemplatedString(attribute.value, variables);
+            const resultAttribute = Syntax.createAttribute(attribute.name, value);
             resultPairs.push(resultAttribute);
         }
 
@@ -42,7 +44,7 @@ class HtmlSyntax {
         return attributes;
     }
 
-    static appendAttribute(parentElement, attributes) {
+    static appendAttribute(parentElement: ASTElement, attributes: any | any[]) {
         if (attributes instanceof Array) {
             for (const attribute of attributes)
                 parentElement.attrs.push(attribute);
@@ -54,14 +56,8 @@ class HtmlSyntax {
 
     /**
      * Append nodes as children of an element.
-     * 
-     * @static
-     * @param {Element} parentElement
-     * @param {(Node|Node[])} children
-     * 
-     * @memberOf HtmlSyntax
      */
-    static append(parentElement, children) {
+    static append(parentElement: ASTElement, children: ASTNode | ASTNode[]) {
         if (children instanceof Array) {
             for (const childNode of children)
                 parentElement.childNodes.push(childNode);
@@ -71,12 +67,7 @@ class HtmlSyntax {
         }
     }
 
-    /**
-     * @param {Element} elementNode
-     * @param {String} attributeName
-     * @returns {String}
-     */
-    static getAttributeValue(elementNode, attributeName) {
+    static getAttributeValue(elementNode: ASTElement, attributeName: string): string {
 
         var attribute = elementNode.attrs
             .filter(a => a.name == attributeName)
@@ -89,7 +80,7 @@ class HtmlSyntax {
 
     }
 
-    static createElement(tagName, parentNode, namespaceURI) {
+    static createElement(tagName: string, parentNode: ASTNode, namespaceURI: string): ASTElement {
         var node = {
             nodeName: tagName,
             tagName: tagName,
@@ -99,20 +90,20 @@ class HtmlSyntax {
             parentNode: parentNode
         };
 
-        return node;
+        return <any>node;
     }
 
-    static createText(value, parentNode) {
+    static createText(value: string, parentNode: ASTNode): ASTText {
         const node = {
             nodeName: '#text',
             value: value,
             parentNode: parentNode
         };
 
-        return node;
+        return <any>node;
     }
 
-    static createAttribute(name, value) {
+    static createAttribute(name: string, value: string) {
         const attribute = {
             name: name,
             value: value
@@ -121,11 +112,7 @@ class HtmlSyntax {
         return attribute;
     }
 
-    /**
-     * @param {String} templateText
-     * @param {Object} variables
-     */
-    static renderTemplatedString(templateText, variables) {
+    static renderTemplatedString(templateText: string, variables) {
 
         const result = templateText.replace(/\@\{([a-zA-Z0-9\_\-]*?)\}/, (replaced, name) => {
 
@@ -140,20 +127,14 @@ class HtmlSyntax {
 
     }
 
-    /**
-     * @param {String} html
-     */
-    static fromHtml(html) {
+    static fromHtml(html: string): ASTElement {
 
         const root = HtmlParser.parseFragment(html);
-        return root;
+        return <ASTElement>root;
 
     }
 
-    /**
-     * @param {Node} node
-     */
-    static toHtml(node) {
+    static toHtml(node: ASTNode): string {
 
         const html = HtmlParser.serialize(node);
         return html;
@@ -161,5 +142,3 @@ class HtmlSyntax {
     }
 
 }
-
-module.exports.HtmlSyntax = HtmlSyntax;
