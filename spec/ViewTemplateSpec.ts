@@ -216,6 +216,8 @@ describe('ViewTemplate', () => {
 
         });
 
+        // TODO: One ensiring nested templates honour their relative paths.
+
     });
 
 });

@@ -25,7 +25,7 @@ export class Scope {
     }
 
     static createChild(parentScope, attributes, transcludedNodes, directory) {
-        directory = directory || parentScope ? parentScope.directory : undefined;
+        directory = directory || (parentScope ? parentScope.directory : undefined);
         const childScope = new Scope(parentScope, attributes, transcludedNodes, directory);
         return childScope;
     }
@@ -33,10 +33,11 @@ export class Scope {
     findView(tag) {
 
         let searchScope: Scope = this;
-        while (searchScope !== undefined) {
+        while (searchScope) {
 
+            // console.log(searchScope);
             const view = searchScope.views[tag];
-            if (view !== undefined)
+            if (view)
                 return view;
 
             searchScope = searchScope.parent;

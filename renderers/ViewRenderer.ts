@@ -8,7 +8,7 @@ export class ViewRenderer {
 
     scope: Scope;
 
-    constructor(renderingTemplate: ViewTemplate, parentScope: Scope, variables: any, sourceNode?: ASTElement) {
+    constructor(renderingTemplate: ViewTemplate, parentScope?: Scope, variables?: any, sourceNode?: ASTElement) {
 
         this.template = renderingTemplate;
         this.sourceNode = sourceNode;

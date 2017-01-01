@@ -25,7 +25,7 @@ export class ViewTemplate {
         // Render and return.
         const output = renderer.render();
         return output;
-
+        
     }
 
     executeToHtml(attributes?: any, parentScope?: Scope) {
@@ -49,8 +49,6 @@ export class ViewTemplate {
 
     /**
      * The HTML of which to parse.
-     * 
-     * @param {String} templateHtml
      */
     static fromHtml(templateHtml: string) {
 
@@ -62,14 +60,11 @@ export class ViewTemplate {
 
     /**
      * Loads the page from an HTML file.
-     * 
-     * @param {String} filename
-     * 
      */
-    static fromFile(filename) {
+    static fromFile(filePath: string) {
 
         // Resolve the filename and absolute path.
-        const absolutePath = Path.resolve(filename);
+        const absolutePath = Path.resolve(filePath);
 
         // Load the HTML from the file and parse it into a traversable DOMs.
         const templateHtml = FileSystem.readFileSync(absolutePath).toString();

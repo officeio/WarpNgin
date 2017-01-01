@@ -4,11 +4,20 @@ import * as Path from 'path';
 import * as Util from 'underscore';
 
 /**
+ * Describes how the project is made and how it should be built.
+ */
+export interface IProjectOptions {
+    pages?: string | string[];
+    rootDirectory?: string;
+    outDirectory?: string
+}
+
+/**
  * Loads/Saves and parses project files.
  */
 export class Project {
 
-    options: any;
+    options: IProjectOptions;
 
     /**
      * Creates an instance of StaticEngineProject.
@@ -19,47 +28,33 @@ export class Project {
                 "**/*.html", 
                 "!**/_*.html"
             ],
-            "includes": [
-                "**/_*.html"
-            ]
+            "outDirectory": "out"
         };
     }
 
     /**
      * Merges options given with the currently set options on this project.
-     * 
-     * @param {any} options
-     * 
-     * @memberOf StaticEngineProject
      */
-    set(options) {
+    set(options: IProjectOptions) {
         const newOptions = Util.extend({}, this.options, options);
         this.options = newOptions;
     }
 
     /**
      * Parses a JSON string into the options for the current project.
-     * 
-     * @param {any} content
-     * 
-     * @memberOf StaticEngineProject
      */
-    parse(content) {
+    parse(content: string) {
         const options = JSON.parse(content);
         this.set(options);
     }
 
     /**
      * Loads the file with the JSON options for this project.
-     * 
-     * @param {any} filename
-     * 
-     * @memberOf StaticEngineProject
      */
-    load(filename) {
+    load(filename: string) {
         filename = filename || Constants.PROJECT_FILENAME;
 
-        const json = FileSystem.readFileSync(filename);
+        const json = FileSystem.readFileSync(filename).toString();
         this.parse(json);
     }
 
@@ -70,7 +65,7 @@ export class Project {
      * 
      * @memberOf StaticEngineProject
      */
-    save(filename) {
+    save(filename?: string) {
         filename = filename || Constants.PROJECT_FILENAME;
 
         const json = JSON.stringify(this.options, null, 4);
