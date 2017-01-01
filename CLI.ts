@@ -1,10 +1,10 @@
-const Yargs:any = require('yargs');
-const Hapi:any = require('hapi');
-const Path:any = require('path');
-const Inert:any = require('inert');
-const Glob:any = require('globule');
-const Util:any = require('underscore');
+const Glob = require('globule');
+import * as Yargs from 'yargs';
+import * as Hapi from 'hapi';
+import * as Inert from 'inert';
 import * as FileSystem from 'fs';
+import * as Path from 'path';
+import * as Util from 'underscore';
 import { ViewTemplate } from './Index';
 
 export class CLI {

@@ -1,8 +1,7 @@
 import { Constants } from './Index';
-
-const FileSystem = require('fs');
-const Path = require('path');
-const Util = require('underscore');
+import * as FileSystem from 'fs';
+import * as Path from 'path';
+import * as Util from 'underscore';
 
 /**
  * Loads/Saves and parses project files.

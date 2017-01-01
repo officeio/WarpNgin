@@ -181,7 +181,7 @@ describe('ViewTemplate', () => {
         it('has included template, should be file contents', () => {
 
             const view = ViewTemplate.fromHtml(`` 
-                + `<s:include file="spec/test-include-1.html"></s:include>`);
+                + `<s:include file="samples/spec1/test-include-1.html"></s:include>`);
 
             var result = view.executeToHtml();
 
@@ -192,7 +192,7 @@ describe('ViewTemplate', () => {
         it('has included template from non-existing file, should error', () => {
 
             const view = ViewTemplate.fromHtml(`` 
-                + `<s:include file="spec/test-include-not-found.html"></s:include>`);
+                + `<s:include file="samples/spec1/test-include-not-found.html"></s:include>`);
 
             expect(function () {
 
@@ -205,7 +205,7 @@ describe('ViewTemplate', () => {
         it('has included template, with placeholder, should be file contents with replacement', () => {
 
             const view = ViewTemplate.fromHtml(`` 
-                + `<s:include file="spec/test-include-2.html"></s:include>`);
+                + `<s:include file="samples/spec1/test-include-2.html"></s:include>`);
             const attributes = {
                 test: 'test_value'
             };
