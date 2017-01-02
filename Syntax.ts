@@ -1,118 +1,112 @@
-// const HtmlParser:any = require('parse5')
-import { ASTElement, ASTNode, ASTText } from './Index';
-import * as HtmlParser from 'parse5';
+// import { treeAdapters } from 'parse5/lib';
+import { ASTElement, ASTNode, ASTText, ASTAttributes, Constants } from './Index';
+import * as HtmlParser from 'htmlparser2';
+const HtmlRender = require('htmlparser-to-html');
+
+export interface ASTNode {
+    type: 'text' | 'comment' | 'tag' | 'directive' | 'script' | 'fragment';
+}
+
+export interface ASTText extends ASTNode {
+    data: string;
+}
+
+export interface ASTElement extends ASTNode, ASTChildren {
+    name: string;
+    attribs: ASTAttributes;
+}
+
+export interface ASTChildren {
+    children: ASTNode[]    
+}
+
+export interface ASTFragment extends ASTNode, ASTChildren {
+}
+
+export type ASTAttributes = { [name:string]:string };
 
 export class Syntax {
 
-    static renderAttributePairs(attributes, variables) {
+    static prependIncludes(parent: ASTChildren, paths: string[]) {
 
-        var resultPairs = [];
+        // Create include elements for each path.
+        const includeElements = paths
+            .map(path => Syntax.createElement(Constants.INCLUDE_TAG, { path: path }));
 
-        for (const attribute of attributes) {
-            const value = Syntax.renderTemplatedString(attribute.value, variables);
-            const resultAttribute = Syntax.createAttribute(attribute.name, value);
-            resultPairs.push(resultAttribute);
-        }
-
-        return resultPairs;
-
+        // Prepend the include elements to the template.
+        parent.children.unshift.apply(parent.children, includeElements);
+        
     }
 
-    static getAttributeDictionary(pairs) {
-        const attributeDictionary = {};
+    static renderAttributes(attributes: ASTAttributes, variables: ASTAttributes): ASTAttributes {
+        var resultAttributes = {};
 
-        for (const pair of pairs)
-            attributeDictionary[pair.name] = pair.value;
+        for (const attributeKey in attributes) {
+            const attributeValue = attributes[attributeKey];
+            const resultValue = Syntax.renderTemplatedString(attributeValue, variables);
+            resultAttributes[attributeKey] = resultValue;
+        }
 
-        return attributeDictionary;
+        return resultAttributes;
     }
 
-    static getAttributePairs(attributeDictionary) {
-        const attributes = [];
+    static addAttributes(parentElement: ASTElement, attributes: ASTAttributes) {
 
-        for (const key in attributeDictionary) {
+        for (const attributeKey in attributes) 
+            parentElement[attributeKey] = attributes[attributeKey];
 
-            const attribute = {
-                name: key,
-                value: attributeDictionary[key]
-            };
-
-            attributes.push(attribute);
-
-        }
-
-        return attributes;
-    }
-
-    static appendAttribute(parentElement: ASTElement, attributes: any | any[]) {
-        if (attributes instanceof Array) {
-            for (const attribute of attributes)
-                parentElement.attrs.push(attribute);
-        }
-        else {
-            parentElement.attrs.push(attributes);
-        }
     }
 
     /**
      * Append nodes as children of an element.
      */
-    static append(parentElement: ASTElement, children: ASTNode | ASTNode[]) {
+    static append(parentElement: ASTChildren, children: ASTNode | ASTNode[]) {
         if (children instanceof Array) {
             for (const childNode of children)
-                parentElement.childNodes.push(childNode);
+                parentElement.children.push(childNode);
         } 
         else {
-            parentElement.childNodes.push(children);
+            parentElement.children.push(children);
         }
     }
 
-    static getAttributeValue(elementNode: ASTElement, attributeName: string): string {
+    static getAttributeValue(element: ASTElement, attributeName: string): string {
 
-        var attribute = elementNode.attrs
-            .filter(a => a.name == attributeName)
-            .shift();
-
-        if (!attribute)
-            return undefined;
-
-        return attribute.value;
+        const value = element.attribs[attributeName];
+        return value;
 
     }
 
-    static createElement(tagName: string, parentNode: ASTNode, namespaceURI: string): ASTElement {
-        var node = {
-            nodeName: tagName,
-            tagName: tagName,
-            attrs: [],
-            namespaceURI: namespaceURI || 'http://www.w3.org/1999/xhtml',
-            childNodes: [],
-            parentNode: parentNode
+    static createFragment(nodes?: ASTNode[]): ASTFragment {
+        const fragment: ASTFragment = {
+            type: 'fragment',
+            children: nodes || []
+        };
+
+        return fragment;
+    }
+
+    static createElement(tagName: string, attributes?: ASTAttributes): ASTElement {
+        var element: ASTElement = {
+            type: 'tag',
+            name: tagName,
+            attribs: attributes || {},
+            children: []
+        };
+
+        return element;
+    }
+
+    static createText(value: string): ASTText {
+        const node: ASTText = {
+            type: 'text',
+            data: value
         };
 
         return <any>node;
     }
 
-    static createText(value: string, parentNode: ASTNode): ASTText {
-        const node = {
-            nodeName: '#text',
-            value: value,
-            parentNode: parentNode
-        };
-
-        return <any>node;
-    }
-
-    static createAttribute(name: string, value: string) {
-        const attribute = {
-            name: name,
-            value: value
-        };
-
-        return attribute;
-    }
-
-    static renderTemplatedString(templateText: string, variables) {
+    static renderTemplatedString(templateText: string, variables: ASTAttributes) {
 
         const result = templateText.replace(/\@\{([a-zA-Z0-9\_\-]*?)\}/, (replaced, name) => {
 
@@ -127,16 +121,61 @@ export class Syntax {
 
     }
 
-    static fromHtml(html: string): ASTElement {
+    static removeCircularReferences(nodes) {
 
-        const root = HtmlParser.parseFragment(html);
-        return <ASTElement>root;
+        if (!nodes || !(nodes instanceof Array))
+            return;
+
+        for (const node of nodes) {
+            delete node.parents;
+            delete node.next;
+            delete node.prev;
+            Syntax.removeCircularReferences(node.children)
+        }
 
     }
 
-    static toHtml(node: ASTNode): string {
+    static fromHtml(html: string): ASTFragment {
+        let nodes = null;
+        let parseError = null;
 
-        const html = HtmlParser.serialize(node);
+        // Setup the handler.
+        const handler = new HtmlParser['DomHandler'](function (error, dom) {
+            if (error) {
+                parseError = error;
+                return;
+            }
+            
+            nodes = dom;
+        });
+
+        // Run the parser.
+        const parser = new HtmlParser.Parser(handler);
+        parser.write(html);
+        parser.done();
+
+        // Get rid of parent, next and prev properties.
+        Syntax.removeCircularReferences(nodes);
+
+        // Create a fragment to return.
+        const fragment = Syntax.createFragment(nodes);
+
+        return fragment;
+    }
+
+    static toHtml(nodes: ASTNode | ASTNode[]): string {
+
+        // Is this a fragment?
+        const fragment = <ASTFragment>nodes; 
+        if (fragment.type && fragment.type == 'fragment')
+            nodes = fragment.children;
+        
+        // Push the singular into an array of nodes.
+        if (fragment.type)
+            nodes = <ASTNode[]>[nodes];
+
+        // Render the nodes into HTML.
+        var html = HtmlRender(nodes);
         return html;
 
     }

@@ -1,20 +1,22 @@
-import { ASTElement, ASTNode, Rendering, Syntax, ViewTemplate, Scope } from '../Index';
+import { ASTElement } from '../Syntax';
+import { ASTChildren, ASTNode, Rendering, Syntax, ViewTemplate, Scope } from '../Index';
 import * as FileSystem from 'fs';
+import * as Path from 'path';
 import * as HtmlParser from 'parse5';
 const Glob = require('globule');
 
 export class IncludeRenderer {
 
-    sourceNode: ASTElement;
+    sourceElement: ASTElement;
 
-    targetElement: ASTElement;
+    targetElement: ASTChildren;
 
     scope: Scope;
 
     template: ViewTemplate;
 
-    constructor(sourceNode: ASTElement, targetElement: ASTElement, scope: Scope, template: ViewTemplate) {
-        this.sourceNode = sourceNode;
+    constructor(sourceElement: ASTElement, targetElement: ASTChildren, scope: Scope, template: ViewTemplate) {
+        this.sourceElement = sourceElement;
         this.targetElement = targetElement;
         this.scope = scope;
         this.template = template;
@@ -22,22 +24,26 @@ export class IncludeRenderer {
 
     render() {
 
+        if (!this.scope.directory)
+            throw Error("Template has no directory, cannot resolve template path");
+
         // Get the singular file if specified.
-        const filename = Syntax.getAttributeValue(this.sourceNode, 'file');
+        const path = Syntax.getAttributeValue(this.sourceElement, 'path');
+
+        // Get the pattern glob.
+        const pattern = Syntax.getAttributeValue(this.sourceElement, 'pattern');
 
         // Get the paths to load.
-        const filesGlob = 
-            Syntax.getAttributeValue(this.sourceNode, 'files')
-            || filename;
+        const filesGlob = pattern || path;
 
         // Find the files that match the glob.
-        const files = Glob.find(filesGlob, {
-            srcBase: this.scope.directory, 
-            destBase: this.scope.directory });
-
+        const files = Glob
+            .find(filesGlob, { srcBase: this.scope.directory })
+            .map(filePath => Path.resolve(this.scope.directory, filePath));
+        
         // Did they want a specific file, and it didn't exist?
-        if (filename && files.length == 0)
-            throw Error(`Include failed, file "${filename}" not found`);
+        if (path && files.length == 0)
+            throw Error(`Include failed, file "${path}" not found`);
 
         for (const file of files) {
 
@@ -45,7 +51,7 @@ export class IncludeRenderer {
             const template = ViewTemplate.fromFile(file);
 
             // Render directly in-place using the current scope, not a child-scope.
-            Rendering.renderNodes(template.templateElement.childNodes, this.targetElement, this.scope, template);
+            Rendering.renderNodes(template.templateElement.children, this.targetElement, this.scope, template);
 
         }
 

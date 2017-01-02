@@ -1,16 +1,16 @@
-import { ASTElement, ASTNode, Rendering, ViewTemplate, Scope } from '../Index';
+import { ASTChildren, ASTNode, Rendering, ViewTemplate, Scope } from '../Index';
 
 export class ContentRenderer {
 
     transcludedNodes: ASTNode[];
 
-    targetElement: ASTElement;
+    targetElement: ASTChildren;
 
     scope: Scope;
 
     template: ViewTemplate;
 
-    constructor(transcludedNodes: ASTNode[], targetElement: ASTElement, scope: Scope, template: ViewTemplate) {
+    constructor(transcludedNodes: ASTNode[], targetElement: ASTChildren, scope: Scope, template: ViewTemplate) {
         this.transcludedNodes = transcludedNodes;
         this.targetElement = targetElement;
         this.scope = scope;

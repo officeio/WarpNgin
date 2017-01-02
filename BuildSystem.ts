@@ -1,7 +1,6 @@
 import { Project, ViewRenderer, ViewTemplate, Syntax, Constants } from './Index';
 import * as Path from 'path';
 import * as FileSystem from 'fs';
-// import * as Globule from 'globule';
 const Glob = require('globule');
 
 export class BuildSystem {
@@ -11,12 +10,7 @@ export class BuildSystem {
     constructor(project?: Project) {
         this.project = project;
     }
-
-    // getTargetFilename(sourceFilename: string, targetDirectory: string) {
-    //     const targetFilename = Path.join(targetDirectory, sourceFilename);
-    //     return targetFilename;
-    // }
-
+    
     /**
      * Find files inside one parent directory up to the next, collecting files.
      * The ones closest to the root will come first.
@@ -29,10 +23,11 @@ export class BuildSystem {
         // Resolve the relative path to an absolute one.
         const rootPath = Path.resolve(options.rootDirectory);
         const sourcePath = Path.join(rootPath, relativePath);
+        const sourceDirectory = Path.dirname(sourcePath);
 
         // Loop from one parent up to the next, collecting files.
         // The ones closest to the root will come first.
-        let searchDirectory = Path.dirname(sourcePath);
+        let searchDirectory = sourceDirectory;
         while (searchDirectory.length >= rootPath.length) {
 
             // Find files in the directory that match the pattern.
@@ -42,7 +37,7 @@ export class BuildSystem {
             const absoluteFilePaths = searchDirectoryFileNames.map(fileName => Path.join(searchDirectory, fileName));
 
             // Get the paths converted to ones that are relative to the root-directory.
-            const relativeFilePaths = absoluteFilePaths.map(absoluteFilePath => Path.relative(rootPath, absoluteFilePath));
+            const relativeFilePaths = absoluteFilePaths.map(absoluteFilePath => Path.relative(sourceDirectory, absoluteFilePath));
 
             // Add these to the start of the list.
             foundFilePaths.unshift.apply(foundFilePaths, relativeFilePaths);
@@ -81,13 +76,8 @@ export class BuildSystem {
 
         const options = this.project.options;
 
-        // ViewTemplate.
-
-        // TODO: Find the start file.
-        const startFilePaths = this.findParentFiles(relativePath, Constants.START_FILENAME_PATTERN);
-        for (const startFilePath in startFilePaths) {
-            // ViewTemplate.fromFile();
-        }
+        // Find the include files.
+        const includeFilePaths = this.findParentFiles(relativePath, Constants.START_FILENAME_PATTERN);
         
         // Work out the source and target file-paths.
         const sourceFilePath = Path.join(options.rootDirectory, relativePath);
@@ -95,6 +85,11 @@ export class BuildSystem {
 
         // Load the template and render to HTML.
         const template = ViewTemplate.fromFile(sourceFilePath);
+
+        // Add the file-paths as include elements.
+        Syntax.prependIncludes(template.templateElement, includeFilePaths);
+
+        // Render the view.
         const renderer = new ViewRenderer(template);
         const nodes = renderer.render();
         const html = Syntax.toHtml(nodes);

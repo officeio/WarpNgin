@@ -1,4 +1,4 @@
-import { ViewTemplate, Constants, Syntax } from './Index';
+import { ASTNode, ViewTemplate, Constants, Syntax } from './Index';
 
 /**
  * Constains information regarding the runtime scope of an element.
@@ -13,7 +13,7 @@ export class Scope {
 
     views: { [index: string]: ViewTemplate } = {};
 
-    transcludedNodes: Node[] = [];
+    transcludedNodes: ASTNode[] = [];
 
     directory: string;
 

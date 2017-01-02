@@ -1,34 +1,30 @@
-import { ASTElement, Rendering, Scope, ViewTemplate } from '../Index';
+import { ASTFragment, Syntax, ASTChildren, Rendering, Scope, ViewTemplate } from '../Index';
 
 export class ViewRenderer {
 
     template: ViewTemplate;
 
-    sourceNode: ASTElement;
+    sourceNode: ASTChildren;
 
     scope: Scope;
 
-    constructor(renderingTemplate: ViewTemplate, parentScope?: Scope, variables?: any, sourceNode?: ASTElement) {
+    constructor(renderingTemplate: ViewTemplate, parentScope?: Scope, variables?: any, sourceNode?: ASTChildren) {
 
         this.template = renderingTemplate;
         this.sourceNode = sourceNode;
 
-        var transcludedNodes = sourceNode ? sourceNode.childNodes : undefined;
+        var transcludedNodes = sourceNode ? sourceNode.children : undefined;
         this.scope = Scope.createChild(parentScope, variables, transcludedNodes, renderingTemplate.directory);
 
     }
 
     render() {
 
-        const root: ASTElement = <any>{
-            nodeName: this.template.templateElement.nodeName,
-            mode: this.template.templateElement['mode'],
-            childNodes: []
-        };
+        const fragment = Syntax.createFragment();
 
-        Rendering.renderNodes(this.template.templateElement.childNodes, root, this.scope, this.template);
+        Rendering.renderNodes(this.template.templateElement.children, fragment, this.scope, this.template);
 
-        return root;
+        return fragment;
 
     }
 

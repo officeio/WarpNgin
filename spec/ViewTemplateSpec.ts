@@ -1,4 +1,5 @@
-import { ASTElement, ViewTemplate } from '../Index';
+import { ASTElement } from '../Syntax';
+import { ASTChildren, ViewTemplate } from '../Index';
 
 // beforeEach(function () {
 //     this.addMatchers({
@@ -18,7 +19,7 @@ describe('ViewTemplate', () => {
 
             expect(result).toBeTruthy();
             // expect(result).toBeInstanceOf(ViewTemplate);
-            expect((<ASTElement>result.templateElement.childNodes[0]).tagName).toEqual('h1');
+            expect((<ASTElement>result.templateElement.children[0]).name).toEqual('h1');
 
         });
 
@@ -181,7 +182,7 @@ describe('ViewTemplate', () => {
         it('has included template, should be file contents', () => {
 
             const view = ViewTemplate.fromHtml(`` 
-                + `<s:include file="samples/spec1/test-include-1.html"></s:include>`);
+                + `<s:include path="samples/spec1/test-include-1.html"></s:include>`);
 
             var result = view.executeToHtml();
 
@@ -192,7 +193,7 @@ describe('ViewTemplate', () => {
         it('has included template from non-existing file, should error', () => {
 
             const view = ViewTemplate.fromHtml(`` 
-                + `<s:include file="samples/spec1/test-include-not-found.html"></s:include>`);
+                + `<s:include path="samples/spec1/test-include-not-found.html"></s:include>`);
 
             expect(function () {
 
@@ -205,7 +206,7 @@ describe('ViewTemplate', () => {
         it('has included template, with placeholder, should be file contents with replacement', () => {
 
             const view = ViewTemplate.fromHtml(`` 
-                + `<s:include file="samples/spec1/test-include-2.html"></s:include>`);
+                + `<s:include path="samples/spec1/test-include-2.html"></s:include>`);
             const attributes = {
                 test: 'test_value'
             };

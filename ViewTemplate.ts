@@ -1,4 +1,5 @@
-import { ASTElement, ASTNode, Syntax, Scope, ViewRenderer } from './Index';
+import { Constants } from './Constants';
+import { ASTFragment, ASTChildren, ASTNode, Syntax, Scope, ViewRenderer } from './Index';
 import * as Path from 'path';
 import * as FileSystem from 'fs';
 
@@ -11,10 +12,9 @@ export class ViewTemplate {
 
     directory: string;
 
-    templateElement: ASTElement;
+    templateElement: ASTChildren;
 
     execute(attributes: any, parentScope?: Scope, transcludedNodes?: ASTNode[]) {
-
         // Has a template been loaded for us?
         if (!this.templateElement)
             throw Error("No template loaded");
@@ -25,10 +25,9 @@ export class ViewTemplate {
         // Render and return.
         const output = renderer.render();
         return output;
-        
     }
 
-    executeToHtml(attributes?: any, parentScope?: Scope) {
+    executeToHtml(attributes?: any, parentScope?: Scope): string {
         const node = this.execute(attributes, parentScope);
         const html = Syntax.toHtml(node);
         return html;
@@ -36,13 +35,12 @@ export class ViewTemplate {
 
     /**
      * Already parsed HTML to be used for a new view.
-     * 
-     * @param {Element} templateElement
      */
-    static fromTemplateElement(templateElement: ASTElement) {
+    static fromTemplateElement(templateElement: ASTChildren) {
 
         const view = new ViewTemplate();
         view.templateElement = templateElement;
+        view.directory = process.cwd();
         return view;
 
     }
@@ -54,6 +52,7 @@ export class ViewTemplate {
 
         const view = new ViewTemplate();
         view.templateElement = Syntax.fromHtml(templateHtml);
+        view.directory = process.cwd();
         return view;
 
     }

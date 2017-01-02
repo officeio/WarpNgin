@@ -3,5 +3,5 @@ export const Constants = {
     CONTENT_TAG: "s:content",
     INCLUDE_TAG: "s:include",
     PROJECT_FILENAME: "staticengineconfig.json",
-    START_FILEPATTERN: "__*.html"
+    START_FILENAME_PATTERN: "__*.html"
 };

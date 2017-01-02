@@ -22,32 +22,34 @@ describe('BuildSystem', () => {
 
     });
 
-    describe('getTargetFilename', () => {
-
-        it('Should give joined path', () => {
-
-            const system = new BuildSystem();
-
-            const filename = system
-                .getTargetFilename('test/page.html', 'dest')
-                .replace(/\\/g, '/');
-
-            expect(filename).toEqual('dest/test/page.html');
-
-        });
-
-    });
-
     describe('build', () => {
 
-        describe('...', () => {
+        describe('Build Spec1 Sample', () => {
 
-            it('...', () => {
+            it('Should Not Error', () => {
 
                 const project = new Project();
                 project.set({ 
                     outDirectory: 'temp',
                     rootDirectory: 'samples/spec1'
+                });
+
+                const system = new BuildSystem(project);
+                
+                system.build();
+
+            });
+
+        });
+
+        describe('Build Spec2 Sample', () => {
+
+            it('Should Not Error', () => {
+
+                const project = new Project();
+                project.set({ 
+                    outDirectory: 'temp',
+                    rootDirectory: 'samples/spec2'
                 });
 
                 const system = new BuildSystem(project);
