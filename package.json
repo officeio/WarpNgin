@@ -2,6 +2,10 @@
   "name": "officeio-staticengine",
   "version": "0.0.1",
   "description": "CLI for serving and building static websites",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/officeio/officeio-staticengine.git" 
+  },
   "dependencies": {
     "globule": "^1.1.0",
     "hapi": "^16.0.2",
@@ -11,18 +15,6 @@
     "underscore": "^1.8.3",
     "yargs": "6.5.0"
   },
-  "preferGlobal": true,
-  // "bin": {
-  //   "staticengine": "./index.js",
-  //   "stngin": "./index.js"
-  // },
-  "main": "index.js",
-  "scripts": {
-    "build": "tsc",
-    "test": "jasmine-node dist/spec"
-  },
-  "author": "James Harrison (OfficeIO Ltd)",
-  "license": "ISC",
   "devDependencies": {
     "@types/hapi": "^13.0.37",
     "@types/htmlparser2": "^3.7.29",
@@ -31,5 +23,12 @@
     "@types/underscore": "^1.7.36",
     "@types/yargs": "^6.5.0",
     "jasmine-node": "^1.14.5"
-  }
+  },
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jasmine-node dist/spec"
+  },
+  "author": "James Harrison (OfficeIO Ltd)",
+  "license": "ISC"
 }

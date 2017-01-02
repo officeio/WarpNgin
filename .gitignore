@@ -4,3 +4,4 @@ dist
 temp
 out
 .DS_Store
+npm-debug.log
