@@ -1,7 +1,16 @@
+.npmignore
 node_modules
 bower_components
-dist
 temp
 out
 .DS_Store
 npm-debug.log
+.gitignore
+.vscode
+spec
+*.ts
+StaticEngine.js
+renderers
+dist/spec
+samples
+tsconfig.json

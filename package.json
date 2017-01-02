@@ -1,6 +1,6 @@
 {
   "name": "warpngin",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "description": "Library for serving and building static websites",
   "author": "James Harrison (OfficeIO Ltd)",
   "repository": {
@@ -29,6 +29,6 @@
     "build": "tsc",
     "test": "jasmine-node dist/spec"
   },
-  "main": "index.js",
+  "main": "dist/index.js",
   "license": "ISC"
 }
