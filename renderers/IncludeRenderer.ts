@@ -2,7 +2,6 @@ import { ASTElement } from '../Syntax';
 import { ASTChildren, ASTNode, Rendering, Syntax, ViewTemplate, Scope } from '../Index';
 import * as FileSystem from 'fs';
 import * as Path from 'path';
-import * as HtmlParser from 'parse5';
 const Glob = require('globule');
 
 export class IncludeRenderer {
