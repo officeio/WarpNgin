@@ -1,0 +1,7 @@
+node_modules
+bower_components
+dist
+temp
+out
+.DS_Store
+npm-debug.log
