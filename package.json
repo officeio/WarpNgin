@@ -1,6 +1,6 @@
 {
   "name": "warpngin",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Library for serving and building static websites",
   "author": "James Harrison (OfficeIO Ltd)",
   "repository": {
