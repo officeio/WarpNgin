@@ -26,8 +26,11 @@ export class Project {
         this.options = {
             "pages": [
                 "**/*.html", 
-                "!**/_*.html"
+                "!**/_*.html",
+                "!node_modules/**",
+                "!bower_components/**"
             ],
+            "rootDirectory": ".",
             "outDirectory": "out"
         };
     }
