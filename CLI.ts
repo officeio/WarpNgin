@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const Glob = require('globule');
 import * as Yargs from 'yargs';
 import * as Hapi from 'hapi';
@@ -5,17 +6,18 @@ import * as Inert from 'inert';
 import * as FileSystem from 'fs';
 import * as Path from 'path';
 import * as Util from 'underscore';
-import { ViewTemplate } from './Index';
+import { Project, BuildSystem } from './Index';
 
 export class CLI {
 
-    argv: { 
+    params: { 
         [index:string]: any,
-        _: any
+        _: any,
+        project: string
     };
 
     constructor() {
-        this.argv = Util.clone(Yargs.argv);
+        this.params = Util.clone(Yargs.argv);
     }
 
     /**
@@ -35,19 +37,19 @@ export class CLI {
     execute() {
 
         // Get the command to execute.
-        const command = this.argv._.shift();
+        const command = this.params._.shift();
         if (!command)
             return this.usage('No command given');
 
         // Any remaining non-switches are files.
-        const files = this.argv._;
+        const files = this.params._;
        
         // Which command are we to process?
         switch (command) {
             // case "serve":
             //     return this.serve();
-            // case "build":
-            //     return this.build(files);
+            case "build":
+                return this.build();
             default:
                 return this.usage(`Unknown command [${command}]`);
         }
@@ -123,30 +125,25 @@ export class CLI {
     //     // return this.usage('Command [serve], not yet implemented');
     // }
 
-    // /**
-    //  * Builds the HTML files, places them into the output folder.
-    //  * The static files are also copied to the output folder.
-    //  * 
-    //  * @param {String[]} files
-    //  */
-    // build(files) {
-        
-    //     // Collect the parameters for this command.
-    //     const params = {
-    //         projectFile: this.argv.project || null
-    //     };
+    /**
+     * Builds the HTML files, places them into the output folder.
+     * The static files are also copied to the output folder.
+     */
+    build() {
 
-    //     // Load the project file.
-    //     if (params.projectFile)
-    //         this.engine.project.load(params.projectFile);
+        // Load the project file.
+        var project = new Project();
+        if (this.params.project)
+            project.load(this.params.project);
 
-    //     if (!files || files.length < 1)
-    //         return this.usage('No files argued to build');
-        
-    //     var view = ViewTemplate.fromFile(files[0]);
-    //     const html = view.executeToHtml(this.argv);
-    //     console.log(html);
-    // }
+        // Create the build-system.
+        var buildSystem = new BuildSystem(project);
+        buildSystem.on('message', (msg) => console.log(msg));
+
+        // Perform the build.
+        buildSystem.build();
+
+    }
 
     /**
      * Prints out the usage to the console.
@@ -160,7 +157,7 @@ export class CLI {
         // Render the usage into lines.
         const lines =
           [ ``
-          , `USAGE: staticengine [command]`
+          , `USAGE: warngin [command]`
           , ``
           , `Commands:`
           , ``
@@ -177,3 +174,5 @@ export class CLI {
     }
 
 }
+
+CLI.run();

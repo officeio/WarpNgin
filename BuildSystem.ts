@@ -1,14 +1,53 @@
 import { Project, ViewRenderer, ViewTemplate, Syntax, Constants } from './Index';
+import * as Util from 'underscore';
+import * as MkDirP from 'mkdirp';
 import * as Path from 'path';
 import * as FileSystem from 'fs';
 const Glob = require('globule');
 
+export type Callback = Function;
+
 export class BuildSystem {
 
     project: Project;
+    private callbacks: { [name:string]: Callback[] } = {};
 
     constructor(project?: Project) {
         this.project = project;
+    }
+
+    on(eventName: string, callback: Function) {
+        let eventCallbacks = this.callbacks[eventName];
+
+        if (!eventCallbacks)
+            eventCallbacks = this.callbacks[eventName] = [];
+
+        eventCallbacks.push(callback);
+    }
+
+    off(eventName: string, callback: Callback) {
+        const eventCallbacks = this.callbacks[eventName];
+
+        if (!eventCallbacks)
+            return;
+
+        const callbackIndex = eventCallbacks.indexOf(callback);
+        if (callbackIndex != -1)
+            eventCallbacks.splice(callbackIndex, 1);
+    }
+
+    trigger(eventName: string, ...args) {
+        const eventCallbacks = this.callbacks[eventName];
+
+        if (!eventCallbacks)
+            return;   
+
+        for (const callback of eventCallbacks)
+            callback.apply(this, args);
+    }
+
+    log(msg: string) {
+        this.trigger('message', msg);
     }
     
     /**
@@ -58,17 +97,23 @@ export class BuildSystem {
     build() {
 
         const options = this.project.options;
+        const pages = <string[]>Util.clone(options.pages);
+        const outDirectory = Path.relative(options.rootDirectory, Path.resolve(options.outDirectory));
+        pages.push(`!${outDirectory}/**`);
 
         // Find all the pages to be compiled.
-        const relativePaths = Glob.find(options.pages, { srcBase: options.rootDirectory });
+        const relativePaths = Glob.find(pages, { srcBase: options.rootDirectory });
 
         // Find the pages we are to build.
         for (const relativePath of relativePaths) {
 
             // console.log(pageFilePath);
+            this.log(`Page [${relativePath}]`);
             this.buildPageFile(relativePath);
 
         }
+
+        this.log('Complete');
 
     }
 
@@ -97,7 +142,7 @@ export class BuildSystem {
         // Does the target directory exist?
         const targetDirectoryPath = Path.dirname(targetFilePath);
         if (!FileSystem.existsSync(targetDirectoryPath))
-            FileSystem.mkdirSync(targetDirectoryPath);
+            MkDirP.sync(targetDirectoryPath);
 
         // Write the target file.
         FileSystem.writeFileSync(targetFilePath, html);
