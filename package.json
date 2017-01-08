@@ -1,12 +1,13 @@
 {
   "name": "warpngin",
-  "version": "0.0.6",
+  "version": "0.0.10",
   "description": "Library for serving and building static websites",
   "author": "James Harrison (OfficeIO Ltd)",
   "repository": {
     "type": "git",
     "url": "https://github.com/officeio/warpngin.git" 
   },
+  "types": "typings/Index.d.ts",
   "dependencies": {
     "globule": "^1.1.0",
     "hapi": "^16.0.2",

@@ -1,3 +1,5 @@
+**/*.ts
+!**/*.d.ts
 .npmignore
 node_modules
 bower_components
@@ -8,9 +10,9 @@ npm-debug.log
 .gitignore
 .vscode
 spec
-*.ts
 StaticEngine.js
 renderers
 dist/spec
+dist/typings
 samples
 tsconfig.json

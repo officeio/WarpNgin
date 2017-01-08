@@ -1,9 +1,16 @@
 {
     "compilerOptions": {
-        "allowJs": true,
         "moduleResolution": "node",
         "module": "commonjs",
         "target": "es6",
-        "outDir": "dist"
-    }
+        "outDir": "dist",
+        "declaration": true,
+        "declarationDir": "dist/typings/generated",
+        "removeComments": true
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!./node_modules/**/*.ts",
+        "!./typings/generated/**/*.ts"
+    ]
 }
