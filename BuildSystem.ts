@@ -5,12 +5,10 @@ import * as Path from 'path';
 import * as FileSystem from 'fs';
 const Glob = require('globule');
 
-export type Callback = Function;
-
 export class BuildSystem {
 
     project: Project;
-    private callbacks: { [name:string]: Callback[] } = {};
+    private callbacks: { [name:string]: Function[] } = {};
 
     constructor(project?: Project) {
         this.project = project;
@@ -25,7 +23,7 @@ export class BuildSystem {
         eventCallbacks.push(callback);
     }
 
-    off(eventName: string, callback: Callback) {
+    off(eventName: string, callback: Function) {
         const eventCallbacks = this.callbacks[eventName];
 
         if (!eventCallbacks)
