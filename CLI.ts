@@ -160,9 +160,9 @@ export class CLI {
           , `USAGE: warngin [command]`
           , ``
           , `Commands:`
-          , ``
-          , `  serve    Runs an HTTP server serving the static files and `
-          , `           processing the HTML files on-the-fly.`
+        //   , ``
+        //   , `  serve    Runs an HTTP server serving the static files and `
+        //   , `           processing the HTML files on-the-fly.`
           , ``
           , `  build    Builds the HTML files, placing them into an output `
           , `           directory, copying the static files also.`
