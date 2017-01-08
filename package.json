@@ -5,7 +5,7 @@
   "author": "James Harrison (OfficeIO Ltd)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/officeio/warpngin.git" 
+    "url": "https://github.com/officeio/warpngin.git"
   },
   "types": "typings/Index.d.ts",
   "dependencies": {
@@ -14,10 +14,15 @@
     "htmlparser-to-html": "0.0.5",
     "htmlparser2": "^3.9.2",
     "inert": "^4.0.4",
+    "mkdirp": "^0.5.1",
     "underscore": "^1.8.3",
     "yargs": "6.5.0"
   },
+  "bin": {
+    "warpngin": "./dist/CLI.js"
+  },
   "devDependencies": {
+    "@types/mkdirp": "^0.3.29",
     "@types/hapi": "^13.0.37",
     "@types/htmlparser2": "^3.7.29",
     "@types/inert": "^4.0.0",
