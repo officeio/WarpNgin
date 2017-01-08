@@ -11,6 +11,7 @@ declare module 'warpngin' {
         pages?: string | string[];
         rootDirectory?: string;
         outDirectory?: string;
+        publicDirectory?: string;
     }
 
     export class Project {

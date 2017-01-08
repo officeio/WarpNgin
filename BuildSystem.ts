@@ -107,7 +107,22 @@ export class BuildSystem {
 
             // console.log(pageFilePath);
             this.log(`Page [${relativePath}]`);
-            this.buildPageFile(relativePath);
+
+            const options = this.project.options;
+
+            // Work out the source and target file-paths.
+            const targetFilePath = Path.join(options.outDirectory, relativePath);
+
+            // Render the HTML of the page.
+            const html = this.buildPageFile(relativePath);
+
+            // Does the target directory exist?
+            const targetDirectoryPath = Path.dirname(targetFilePath);
+            if (!FileSystem.existsSync(targetDirectoryPath))
+                MkDirP.sync(targetDirectoryPath);
+
+            // Write the target file.
+            FileSystem.writeFileSync(targetFilePath, html);
 
         }
 
@@ -115,16 +130,15 @@ export class BuildSystem {
 
     }
 
-    buildPageFile(relativePath: string) {
+    buildPageFile(relativePath: string): string {
 
         const options = this.project.options;
 
         // Find the include files.
         const includeFilePaths = this.findParentFiles(relativePath, Constants.START_FILENAME_PATTERN);
-        
-        // Work out the source and target file-paths.
+
+        // Workou the source file-path, against the root directory.
         const sourceFilePath = Path.join(options.rootDirectory, relativePath);
-        const targetFilePath = Path.join(options.outDirectory, relativePath);
 
         // Load the template and render to HTML.
         const template = ViewTemplate.fromFile(sourceFilePath);
@@ -137,13 +151,7 @@ export class BuildSystem {
         const nodes = renderer.render();
         const html = Syntax.toHtml(nodes);
 
-        // Does the target directory exist?
-        const targetDirectoryPath = Path.dirname(targetFilePath);
-        if (!FileSystem.existsSync(targetDirectoryPath))
-            MkDirP.sync(targetDirectoryPath);
-
-        // Write the target file.
-        FileSystem.writeFileSync(targetFilePath, html);
+        return html;
 
     }
 

@@ -9,7 +9,8 @@ import * as Util from 'underscore';
 export interface IProjectOptions {
     pages?: string | string[];
     rootDirectory?: string;
-    outDirectory?: string
+    outDirectory?: string;
+    publicDirectory?: string;
 }
 
 /**

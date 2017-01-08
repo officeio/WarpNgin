@@ -6,14 +6,16 @@ import * as Inert from 'inert';
 import * as FileSystem from 'fs';
 import * as Path from 'path';
 import * as Util from 'underscore';
-import { Project, BuildSystem } from './Index';
+import { IProjectOptions, Project, BuildSystem } from './Index';
 
 export class CLI {
 
     params: { 
-        [index:string]: any,
         _: any,
-        project: string
+        project: string,
+        src: string,
+        public: string,
+        [index:string]: any
     };
 
     constructor() {
@@ -46,8 +48,8 @@ export class CLI {
        
         // Which command are we to process?
         switch (command) {
-            // case "serve":
-            //     return this.serve();
+            case "serve":
+                return this.serve();
             case "build":
                 return this.build();
             default:
@@ -56,74 +58,87 @@ export class CLI {
 
     }
 
-    // /**
-    //  * Starts up a web server, that serves static files, and also processes the HTML files.
-    //  */
-    // serve() {
+    /**
+     * Starts up a web server, that serves static files, and also processes the HTML files.
+     */
+    serve() {
 
-    //     const publicDirectory = './public';
-    //     const sourceDirectory = './src';
+        if (!this.params.src)
+            return this.usage('No [src] argument given');
 
-    //     const staticEngine = new StaticEngine();
-    //     // staticEngine.sourceDirectory = sourceDirectory;
+        const options: IProjectOptions = {
+            rootDirectory: this.params.src,
+            publicDirectory: this.params.public
+        };
 
-    //     const server = new Hapi.Server({
-    //         connections: {
-    //             routes: {
-    //                 files: {
-    //                     relativeTo: Path.join(__dirname, publicDirectory)
-    //                 }
-    //             }
-    //         }
-    //     });
+        const project = new Project();
+        project.set(options);
 
-    //     server.connection({ port: 3000 });
+        const server = new Hapi.Server({
+            connections: {
+                routes: {
+                    files: {
+                        relativeTo: Path.join(__dirname, project.options.publicDirectory)
+                    }
+                }
+            }
+        });
 
-    //     server.register(Inert, () => {});
+        server.connection({ port: 3000 });
 
-    //     server.route({
-    //         method: 'GET',
-    //         path: '/{param*}',
-    //         handler: (request, reply) => {
-    //             let filePath = request.params.param;
-    //             if (!filePath)
-    //                 filePath = "index.html";
+        server.register(Inert, () => {});
 
-    //             const extension = Path.extname(filePath);
+        server.route({
+            method: 'GET',
+            path: '/{param*}',
+            handler: (request, reply) => {
 
-    //             if (extension === '.html') {
-    //                 var fullPath = Path.join(__dirname, sourceDirectory, filePath);
-    //                 var exists = FileSystem.existsSync(fullPath);
-    //                 if (exists) {
-    //                     console.log(`processing ${filePath}`);
-    //                     var contents = staticEngine.transpileFile(fullPath);
-    //                     return reply('<h1>Poo</h1>' + contents);
-    //                 }
-    //             }
+                let filePath = request.params['param'];
+                if (!filePath)
+                    filePath = "index.html";
 
-    //             console.log(filePath);
-    //             reply.file(filePath);
-    //         }
-    //     });
+                const extension = Path.extname(filePath);
+                console.log(`GET ${filePath}`);
 
-    //     // server.route({
-    //     //     method: 'GET',
-    //     //     path: '/{param*}',
-    //     //     handler: {
-    //     //         directory: {
-    //     //             path: '.',
-    //     //             redirectToSlash: true,
-    //     //             index: true,
-    //     //             listing: true,
+                if (extension === '.html') {
+                    var fullPath = Path.join(project.options.rootDirectory, filePath);
+                    console.log(`.. routed to ${fullPath}`);
+                    var exists = FileSystem.existsSync(fullPath);
+                    if (exists) {
 
-    //     //         }
-    //     //     }
-    //     // });
+                        console.log(`processing ${filePath}`);
+                        const buildSystem = new BuildSystem(project);
+                        const html = buildSystem.buildPageFile(filePath);
 
-    //     server.start();
+                        return reply(html);
 
-    //     // return this.usage('Command [serve], not yet implemented');
-    // }
+                    }
+                }
+
+                // console.log(filePath);
+                reply.file(filePath);
+                
+            }
+        });
+
+        // server.route({
+        //     method: 'GET',
+        //     path: '/{param*}',
+        //     handler: {
+        //         directory: {
+        //             path: '.',
+        //             redirectToSlash: true,
+        //             index: true,
+        //             listing: true,
+
+        //         }
+        //     }
+        // });
+
+        server.start();
+
+        // return this.usage('Command [serve], not yet implemented');
+    }
 
     /**
      * Builds the HTML files, places them into the output folder.
@@ -160,12 +175,24 @@ export class CLI {
           , `USAGE: warngin [command]`
           , ``
           , `Commands:`
-        //   , ``
-        //   , `  serve    Runs an HTTP server serving the static files and `
-        //   , `           processing the HTML files on-the-fly.`
+          , ``
+          , `  serve    Runs an HTTP server serving the static files and `
+          , `           processing the HTML files on-the-fly.`
+          , ``
+          , `           --src       The source directory of the HTML files`
+          , `                       to be rendered and served`
+          , ``
+          , `           --public    (Optional) The directory holding any `
+          , `                       static files, by default, is same as src.`
+          , ``
+          , `           --project   (Optional) Can define the project file`
+          , `                       to load with project options.`
           , ``
           , `  build    Builds the HTML files, placing them into an output `
           , `           directory, copying the static files also.`
+          , ``
+          , `           --project   (Optional) Can define the project file`
+          , `                       to load with project options.`
           , `` ];
 
         // Join the lines together and output.
